@@ -140,6 +140,19 @@ html,body{height:100%;margin:0;overflow:hidden;background:var(--ink);color:var(-
 .keys dd{margin:0;color:var(--mute)}
 .tip{margin:0;font-size:14px;line-height:1.45;color:var(--mute);border-left:2px solid var(--amber);padding-left:12px;max-width:60ch}
 .tip b{color:var(--fg)}
+.online{padding:12px;border:1px solid var(--line);background:rgba(255,255,255,.035)}
+.field{display:flex;flex-direction:column;gap:4px}
+.field label{font-weight:600}
+.field input{font:inherit;font-size:16px;color:var(--fg);background:rgba(0,0,0,.35);border:1px solid var(--line);padding:7px 10px;width:100%;max-width:260px;box-sizing:border-box}
+.field input:focus{outline:2px solid var(--amber);outline-offset:-1px}
+.netrow{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.field.join{flex-direction:row;gap:6px}
+.field.join input{width:7.5ch;text-transform:uppercase;letter-spacing:.2em;font-weight:700}
+.room{display:flex;flex-wrap:wrap;align-items:center;gap:10px}
+.room b{font-family:var(--display);font-weight:400;font-size:34px;letter-spacing:.12em;color:var(--amber)}
+.netstat{margin:0;font-size:14px;color:var(--mute)}
+.netstat.ok{color:var(--amber)} .netstat.err{color:var(--red)}
+#play:disabled{opacity:.4;cursor:default;filter:none}
 .cta{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
 .btn{appearance:none;font-family:var(--display);font-size:26px;line-height:1;padding:12px 28px 11px;border:1px solid var(--amber);background:var(--amber);color:var(--amber-ink);cursor:pointer}
 .btn.ghost{background:transparent;color:var(--fg);border-color:var(--line);font-size:20px;padding:10px 20px 9px}
@@ -177,7 +190,7 @@ button:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
   <div id="hitm"><i></i><i></i><i></i><i></i></div>
   <div id="scope"><div class="lens"></div><div class="h"></div><div class="v"></div><div class="post pl"></div><div class="post pr"></div><div class="post pb"></div><div class="mil"></div></div>
   <div id="vig"></div>
-  <div id="top"><span class="who you">TOI</span><b id="s0">0</b><span class="sep">–</span><b id="s1">0</b><span class="who">BOT</span><small id="ft">Premier à 5</small></div>
+  <div id="top"><span class="who you">TOI</span><b id="s0">0</b><span class="sep">–</span><b id="s1">0</b><span class="who" id="oppName">BOT</span><small id="ft">Premier à 5</small></div>
   <div id="feed"></div>
   <div id="banner"><div id="bannerBig"></div><div id="bannerSmall"></div></div>
   <div id="callout"></div>
@@ -191,8 +204,27 @@ button:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
   <div class="panel">
     <div>
       <h1 class="logo">SCOPE<br><span>DUEL</span></h1>
-      <p class="tag">1v1 au sniper contre un bot, sur des petites maps. Une balle au corps suffit. Quickscope, noscope, 360 : tout compte.</p>
+      <p class="tag">1v1 au sniper contre un bot ou un pote, sur des petites maps. Une balle au corps suffit. Quickscope, noscope, 360 : tout compte.</p>
     </div>
+    <section class="sec">
+      <h2>Adversaire</h2>
+      <div class="seg" id="netSeg">
+        <button type="button" data-v="solo">Bot</button><button type="button" data-v="online">Un pote (en ligne)</button>
+      </div>
+    </section>
+    <section class="sec online" id="online" hidden>
+      <div class="field"><label for="nick">Ton pseudo</label><input id="nick" maxlength="14" autocomplete="off" spellcheck="false"></div>
+      <div class="netrow">
+        <button type="button" class="btn ghost" id="host">Créer une partie</button>
+        <span class="note">ou</span>
+        <div class="field join"><input id="joinCode" maxlength="5" placeholder="CODE" autocomplete="off" spellcheck="false" aria-label="Code de la partie"><button type="button" class="btn ghost" id="join">Rejoindre</button></div>
+      </div>
+      <div class="room" id="room" hidden>
+        <span class="lbl">Code</span><b id="roomCode">-----</b>
+        <button type="button" class="btn ghost" id="copyLink">Copier le lien</button>
+      </div>
+      <p class="netstat" id="netStatus" role="status"></p>
+    </section>
     <section class="sec">
       <h2>Map</h2>
       <div class="maps" id="maps"></div>
@@ -208,7 +240,7 @@ button:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
           <button type="button" data-v="cs">CS</button><button type="button" data-v="arcade">Arcade</button>
         </div>
       </section>
-      <section class="sec">
+      <section class="sec botonly">
         <h2>Arme du bot</h2>
         <div class="seg" id="botWSeg">
           <button type="button" data-v="random">Au hasard</button><button type="button" data-v="same">Comme moi</button>
@@ -217,7 +249,7 @@ button:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
     </div>
     <p class="note" id="styleNote"></p>
     <div class="row">
-      <section class="sec">
+      <section class="sec botonly">
         <h2>Bot</h2>
         <div class="seg" id="diffSeg">
           <button type="button" data-v="easy">Recrue</button><button type="button" data-v="normal">Soldat</button><button type="button" data-v="hard">Élite</button>
@@ -259,6 +291,7 @@ button:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
     <p class="tip"><b>Quickscope :</b> clic droit puis clic gauche dès que la lunette est en place (0,16 s). Sans lunette, la balle part dans un cône large : le noscope marche de près. Un <b>reflet orange</b> trahit le bot quand il est en lunette.</p>
     <div class="cta">
       <button type="button" class="btn" id="play">JOUER</button>
+      <span class="note" id="playNote"></span>
       <span class="note" id="touchNote" hidden>Ce jeu se joue au clavier et à la souris.</span>
     </div>
   </div>
@@ -267,6 +300,7 @@ button:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
 <div id="pause" class="overlay" hidden>
   <div class="panel">
     <h1 class="logo">PAUSE</h1>
+    <p class="tip" id="pauseNet" hidden><b>Partie en ligne :</b> le jeu continue pendant la pause, ton pote peut toujours te tirer dessus.</p>
     <div class="row">
       <div class="slider"><label for="pSens">Sensibilité</label><output id="pSensOut">1.00</output><input id="pSens" type="range" min="0.2" max="3" step="0.05"></div>
       <div class="slider"><label for="pScopeSens">Sensibilité lunette</label><output id="pScopeSensOut">1.00</output><input id="pScopeSens" type="range" min="0.3" max="1.6" step="0.05"></div>
@@ -296,6 +330,7 @@ button:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
 <div id="loading">Chargement…</div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/peerjs/1.5.4/peerjs.min.js"></script>
 <script>
 'use strict';
 const $ = id => document.getElementById(id);
@@ -360,9 +395,10 @@ const STYLES = {
 let MOVE = STYLES.cs;
 const PH = 1 / 120; // pas fixe de la physique du joueur
 
-const cfg = Object.assign({ map: 'docks', diff: 'normal', target: 5, sens: 1, scopeSens: 1, scopeMode: 'hold', weapon: 'mk7', botWeapon: 'random' }, store.get('scopeduel.cfg', {}));
+const cfg = Object.assign({ map: 'docks', diff: 'normal', target: 5, sens: 1, scopeSens: 1, scopeMode: 'hold', weapon: 'mk7', botWeapon: 'random', net: 'solo', nick: '' }, store.get('scopeduel.cfg', {}));
 if (!WEAPONS[cfg.weapon]) cfg.weapon = 'mk7';
 if (!STYLES[cfg.style]) cfg.style = 'cs';
+if (cfg.net !== 'online') cfg.net = 'solo';
 MOVE = STYLES[cfg.style];
 const saveCfg = () => store.set('scopeduel.cfg', cfg);
 
@@ -930,29 +966,33 @@ function spawnFacing(e, x) {
 }
 
 // ================= Déroulé du match =================
-function startMatch() {
+// sw : côté de départ imposé (en ligne) ; online : match contre un pote ; lock : verrouiller la souris tout de suite (geste requis)
+function startMatch(sw, online = false, lock = true) {
+  net.on = online;
   MOVE = STYLES[cfg.style];
   loadMap(cfg.map);
   game.score = [0, 0]; game.round = 0; game.swap = Math.random() < .5;
   game.stats = { shots: 0, hits: 0, hs: 0, qs: 0, ns: 0, spin: 0, air: 0, long: 0, kills: 0 };
   $('feed').innerHTML = '';
-  $('ft').textContent = `Premier à ${cfg.target} · ${curMap.name} · Bot ${DIFF[cfg.diff].label} · ${MOVE.label}`;
+  $('ft').textContent = `Premier à ${cfg.target} · ${curMap.name} · ${online ? 'contre ' + net.oppName : 'Bot ' + DIFF[cfg.diff].label} · ${MOVE.label}`;
+  setText('oppName', oppLabel());
   showScreen('hud');
-  startRound();
-  requestLock();
+  startRound(sw);
+  if (lock) requestLock(); else hint('Clique dans la fenêtre pour prendre la souris', 4);
 }
-function startRound() {
-  game.round++; game.swap = !game.swap;
+function startRound(sw) {
+  game.round++; game.swap = sw === undefined ? !game.swap : sw;
   const sx = curMap.spawnX * (game.swap ? 1 : -1);
   spawnFacing(player, sx); spawnFacing(bot, -sx);
   Object.assign(player, { scope: 0, wantScope: false, toggled: false, bolt: 0, reload: 0, recoil: 0, eyeY: EYE_STAND, tagT: 0 });
   setPlayerWeapon(cfg.weapon);
-  setBotWeapon(cfg.botWeapon === 'random' ? WKEYS[(Math.random() * WKEYS.length) | 0] : cfg.weapon);
+  if (!net.on) setBotWeapon(cfg.botWeapon === 'random' ? WKEYS[(Math.random() * WKEYS.length) | 0] : cfg.weapon);
+  else { net.netPos.copy(bot.pos); net.netVel.set(0, 0, 0); net.yaw = bot.yaw; net.pitch = 0; }
   Object.assign(bot, { scope: 0, bolt: 0, reload: 0, seeTime: 0, lostT: 9, alert: 0, holdT: 0, hasLast: false, path: null, roamGoal: null, goal: null, strafeDir: 0, flashT: 0, tagT: 0 });
   bot.model.rotation.set(0, bot.yaw, 0); bot.model.position.copy(bot.pos); bot.model.visible = true;
   game.state = 'countdown'; game.timer = 3;
   banner(`MANCHE ${game.round}`, '3', 99); sfx.tick();
-  hint(`1 à 4 : changer d'arme · le bot a le ${BW().name}`, 3);
+  hint(`1 à 4 : changer d'arme · ${net.on ? net.oppName : 'le bot'} a le ${BW().name}`, 3);
   updateScore();
 }
 function setPlayerWeapon(key) {
@@ -977,7 +1017,9 @@ function finishMatch() {
   $('endTitle').textContent = win ? 'VICTOIRE' : 'DÉFAITE';
   $('endTitle').className = 'result ' + (win ? 'win' : 'lose');
   $('endScore').textContent = `${game.score[0]} – ${game.score[1]}`;
-  $('endSub').textContent = `${curMap.name} · Bot ${DIFF[cfg.diff].label} · ${game.round} manches`;
+  $('endSub').textContent = `${curMap.name} · ${net.on ? 'contre ' + net.oppName : 'Bot ' + DIFF[cfg.diff].label} · ${game.round} manches` +
+    (net.on && !net.host ? ' · l’hôte peut lancer la revanche' : '');
+  $('again').hidden = net.on && !net.host;
   const acc = s.shots ? Math.round(100 * s.hits / s.shots) : 0;
   const cells = [[acc + ' %', 'Précision'], [s.hs, 'Headshots'], [s.qs, 'Quickscopes'], [s.ns, 'No scopes'], [s.long ? s.long + ' m' : '–', 'Plus long kill'], [s.spin, '360°']];
   $('endStats').innerHTML = cells.map(([v, l]) => `<div><b>${v}</b><span>${l}</span></div>`).join('');
@@ -1011,7 +1053,7 @@ document.addEventListener('pointerlockchange', () => {
 });
 document.addEventListener('pointerlockerror', onLockError);
 function setPaused(p) {
-  game.paused = p;
+  game.paused = p; $('pauseNet').hidden = !net.on;
   if (p) { syncSliders(); showScreen('pause'); keysReset(); }
   else if (inMatch()) showScreen('hud');
 }
@@ -1019,7 +1061,7 @@ function keysReset() { for (const k in keys) keys[k] = false; player.wantScope =
 
 // ================= Entrées =================
 addEventListener('keydown', e => {
-  if (e.code === 'Space' || e.code === 'Tab') e.preventDefault();
+  if ((e.code === 'Space' || e.code === 'Tab') && !(e.target instanceof HTMLInputElement)) e.preventDefault();
   if (!inMatch()) return;
   if (e.code === 'KeyP' || (e.code === 'Escape' && lockFailed)) { setPaused(!game.paused); if (!game.paused && !lockFailed) requestLock(); return; }
   if (game.paused) return;
@@ -1031,7 +1073,7 @@ addEventListener('keydown', e => {
     if (wi >= 0 && WKEYS[wi]) {
       if (game.state === 'countdown') {
         cfg.weapon = WKEYS[wi]; saveCfg(); setPlayerWeapon(cfg.weapon);
-        if (cfg.botWeapon === 'same') setBotWeapon(cfg.weapon);
+        if (cfg.botWeapon === 'same' && !net.on) setBotWeapon(cfg.weapon);
         hint(`Arme : ${PW().name}`, 1.5);
       } else if (game.state === 'live') hint('Change d\'arme pendant le compte à rebours', 1.5);
     }
@@ -1103,17 +1145,41 @@ function tryFire() {
   game.stats.shots++;
   sfx.shot(.9, 0, 0, W.snd); if (W.bolt) sfx.bolt();
   if (cfg.scopeMode === 'toggle' && W.bolt) p.toggled = false;
-  if (bot.alive && bot.seeTime === 0) { bot.alert = 4; bot.hasLast = true; bot.lastSeen.copy(p.pos); bot.holdT = 0; }
+  if (net.on) send('shot', { w: p.weapon, e: arr(end), n: hit && !hit.ent ? arr(hit.n) : null });
+  else if (bot.alive && bot.seeTime === 0) { bot.alert = 4; bot.hasLast = true; bot.lastSeen.copy(p.pos); bot.holdT = 0; }
   if (!hit) return;
   if (hit.ent) playerHitsBot(hit, end, info);
   else impact(end, hit.n);
 }
+function killTags(info, W, wall, head) {
+  const tags = [];
+  if (W.bolt && info.scoped && info.scopeTime < .5) tags.push(['QUICKSCOPE', 1]);
+  else if (info.partial < .5) tags.push(['NO SCOPE', 1]);
+  if (info.spin > 5.6) tags.push(['360°', 1]);
+  if (wall) tags.push(['WALLBANG', 1]);
+  if (head) tags.push(['HEADSHOT', 0]);
+  if (info.air) tags.push(['EN L’AIR', 0]);
+  if (!tags.length) tags.push(['ÉLIMINÉ', 0]);
+  return tags;
+}
+function countKill(tags, dist) {
+  const s = game.stats;
+  for (const [t] of tags) { if (t === 'QUICKSCOPE') s.qs++; if (t === 'NO SCOPE') s.ns++; if (t === '360°') s.spin++; if (t === 'EN L’AIR') s.air++; }
+  s.kills++; s.long = Math.max(s.long, dist);
+}
+const feedTags = tags => tags.filter(t => t[0] !== 'ÉLIMINÉ').map(t => t[0] === 'HEADSHOT' ? 'HS' : t[0]);
 function playerHitsBot(hit, pos, info) {
-  const b = bot, W = PW(), head = hit.part === 'head', wall = hit.pierced.length > 0;
-  b.health -= W.dmg[hit.part] * (wall ? .75 : 1);
+  const b = bot, W = PW(), head = hit.part === 'head', wall = hit.pierced.length > 0, dmg = W.dmg[hit.part] * (wall ? .75 : 1);
+  b.health -= dmg;
   game.stats.hits++; if (head) game.stats.hs++;
   burst(pos, hit.n, 0x9e1b12, 14, 3);
   game.hitT = .2;
+  if (net.on) {
+    // en ligne : la victime applique les dégâts ; ici on prédit seulement le marqueur
+    $('hitm').classList.toggle('kill', b.health <= 0); if (b.health <= 0) sfx.kill(); else sfx.hit(head);
+    send('hit', { w: player.weapon, part: hit.part, wall, dist: Math.round(hit.t), tags: killTags(info, W, wall, head) });
+    return;
+  }
   if (b.health > 0) {
     $('hitm').classList.remove('kill'); sfx.hit(head);
     b.alert = 4; b.hasLast = true; b.lastSeen.copy(player.pos); b.seeTime += .25;
@@ -1121,26 +1187,24 @@ function playerHitsBot(hit, pos, info) {
     return;
   }
   b.alive = false; b.deadT = 0; $('hitm').classList.add('kill'); sfx.kill();
-  const tags = [], dist = Math.round(hit.t), s = game.stats;
-  if (W.bolt && info.scoped && info.scopeTime < .5) { tags.push(['QUICKSCOPE', 1]); s.qs++; }
-  else if (info.partial < .5) { tags.push(['NO SCOPE', 1]); s.ns++; }
-  if (info.spin > 5.6) { tags.push(['360°', 1]); s.spin++; }
-  if (wall) tags.push(['WALLBANG', 1]);
-  if (head) tags.push(['HEADSHOT', 0]);
-  if (info.air) { tags.push(['EN L’AIR', 0]); s.air++; }
-  if (!tags.length) tags.push(['ÉLIMINÉ', 0]);
-  s.kills++; s.long = Math.max(s.long, dist);
+  const tags = killTags(info, W, wall, head), dist = Math.round(hit.t);
+  countKill(tags, dist);
   callout(tags, dist);
-  feed(true, W.name, tags.filter(t => t[0] !== 'ÉLIMINÉ').map(t => t[0] === 'HEADSHOT' ? 'HS' : t[0]));
+  feed(true, W.name, feedTags(tags));
   endRound(0, 'MANCHE GAGNÉE', `${game.score[0] + 1} – ${game.score[1]}`);
 }
-function playerHit(part, dist, wall) {
-  const p = player, W = BW();
+function playerHit(part, dist, wall, wkey = bot.weapon, tags = []) {
+  const p = player, W = WEAPONS[wkey];
   p.health -= W.dmg[part] * (wall ? .75 : 1); p.hurtT = 1; sfx.hurt();
   p.recoil += .04; p.yaw += (Math.random() - .5) * .04;
   if (MOVE.tag) { p.tagT = .5; p.vel.x *= .4; p.vel.z *= .4; } // ralenti quand on est touché, comme dans CS
   if (p.health > 0) return;
   p.health = 0; p.alive = false; p.deadT = 0; p.scope = 0;
+  if (net.on) {
+    const info = { w: wkey, part, wall, dist: Math.round(dist), tags };
+    if (net.host) hostRoundOver(false, info); else send('died', { info });
+    return;
+  }
   feed(false, W.name, [wall ? 'WALLBANG' : '', part === 'head' ? 'HS' : ''].filter(Boolean));
   endRound(1, 'ÉLIMINÉ', `Le bot t’a eu au ${W.name} ${part === 'head' ? 'en pleine tête' : part === 'legs' ? 'aux jambes' : 'au corps'} · ${Math.round(dist)} m`);
 }
@@ -1443,8 +1507,9 @@ function hint(text, dur) { $('hint').textContent = text; $('hint').hidden = fals
 const RETICLE_SVG = '<svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.5"><circle cx="8" cy="8" r="5.5"/><path d="M8 0v4M8 12v4M0 8h4M12 8h4"/></svg>';
 function feed(youKilled, weapon, tags) {
   const d = document.createElement('div');
-  d.innerHTML = (youKilled ? '<span class="you">TOI</span>' : '<span class="bot">BOT</span>') + RETICLE_SVG + `<small class="fw">${weapon}</small>` +
-    (youKilled ? '<span class="bot">BOT</span>' : '<span class="you">TOI</span>') + tags.map(t => `<em>${t}</em>`).join('');
+  const opp = `<span class="bot">${oppLabel()}</span>`;
+  d.innerHTML = (youKilled ? '<span class="you">TOI</span>' : opp) + RETICLE_SVG + `<small class="fw">${weapon}</small>` +
+    (youKilled ? opp : '<span class="you">TOI</span>') + tags.map(t => `<em>${t}</em>`).join('');
   d.querySelector('svg').style.color = youKilled ? 'var(--amber)' : 'var(--red)';
   const f = $('feed'); f.prepend(d); while (f.children.length > 4) f.lastChild.remove();
   setTimeout(() => d.remove(), 6000);
@@ -1503,10 +1568,15 @@ function update(dt) {
     if (game.timer <= 0) { game.state = 'live'; banner('GO', '', .8); sfx.go(); }
   } else if (game.state === 'roundEnd') {
     game.timer -= dt;
-    if (game.timer <= 0) { if (Math.max(...game.score) >= cfg.target) finishMatch(); else startRound(); }
+    if (game.timer <= 0) {
+      if (Math.max(...game.score) >= cfg.target) finishMatch();
+      else if (!net.on) startRound();
+      else if (net.host) { const sw = !game.swap; send('round', { swap: sw }); startRound(sw); }
+      // l'invité attend le message « round » de l'hôte
+    }
   }
   updatePlayer(dt);
-  updateBot(dt);
+  if (net.on) { updateRemote(dt); sendState(dt); } else updateBot(dt);
 }
 function menuCamera(dt) {
   menuAng += dt * .07;
@@ -1520,7 +1590,11 @@ function frame(t) {
   requestAnimationFrame(frame);
   const dt = Math.min(.05, Math.max(0, (t - last) / 1000)); last = t;
   if (game.state === 'menu' || game.state === 'over') { menuCamera(dt); updateFx(dt); }
-  else if (!game.paused) { now += dt; update(dt); updateFx(dt); updateHud(dt); }
+  else if (!game.paused || net.on) { now += dt; update(dt); updateFx(dt); updateHud(dt); } // en ligne, la pause n'arrête pas le jeu
+  if (net.ready) {
+    net.pingT = (net.pingT || 0) - dt; if (net.pingT <= 0) { net.pingT = 2; send('p'); }
+    if (performance.now() - net.lastRx > 10000) onNetClose();
+  }
   updateBotModel(dt);
   updateViewmodel(game.paused ? 0 : dt);
   sky.position.copy(camera.position);
@@ -1534,6 +1608,198 @@ function resize() {
   camera.aspect = vmCam.aspect = w / h; camera.updateProjectionMatrix(); vmCam.updateProjectionMatrix();
 }
 addEventListener('resize', resize);
+
+// ================= En ligne (pair à pair WebRTC via PeerJS) =================
+// L'hôte choisit map, style et manches, et arbitre le score. Chacun simule son joueur et décide de ses tirs ;
+// la victime applique les dégâts puis prévient l'hôte de sa mort. L'adversaire distant occupe l'entité « bot ».
+const NET_PREFIX = 'scopeduel-', CODE_CHARS = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+const PARTS = ['head', 'body', 'legs'], TAG_OK = new Set(['QUICKSCOPE', 'NO SCOPE', '360°', 'WALLBANG', 'HEADSHOT', 'EN L’AIR', 'ÉLIMINÉ']);
+const net = { on: false, host: false, ready: false, peer: null, conn: null, code: '', oppName: 'POTE', netPos: new V3(), netVel: new V3(), netT: 0, yaw: 0, pitch: 0, sendT: 0, lastRx: 0 };
+const isOnline = () => cfg.net === 'online';
+const arr = v => [+v.x.toFixed(3), +v.y.toFixed(3), +v.z.toFixed(3)];
+const cleanName = s => String(s || '').replace(/[^\p{L}\p{N} _.\-]/gu, '').trim().slice(0, 14);
+const myName = () => cleanName(cfg.nick) || 'Joueur';
+function oppLabel() { return net.on ? net.oppName.toUpperCase() : 'BOT'; }
+function netStatus(text, cls = '') { $('netStatus').textContent = text; $('netStatus').className = 'netstat ' + cls; }
+function send(t, data) { if (net.conn && net.conn.open) try { net.conn.send(Object.assign({ t }, data)); } catch (e) {} }
+function netReset() {
+  const { conn, peer } = net;
+  Object.assign(net, { on: false, host: false, ready: false, peer: null, conn: null, code: '' });
+  try { if (conn) conn.close(); } catch (e) {}
+  try { if (peer) peer.destroy(); } catch (e) {}
+  $('room').hidden = true; netStatus(''); refreshMenu();
+}
+function netError(err) {
+  const msg = { 'peer-unavailable': 'Aucune partie avec ce code (ou elle est fermée).', network: 'Serveur de connexion injoignable.', 'browser-incompatible': 'Navigateur incompatible avec le jeu en ligne.' };
+  netStatus(msg[err && err.type] || 'Erreur réseau : ' + ((err && (err.type || err.message)) || 'inconnue'), 'err');
+}
+function hostGame(tries = 0) {
+  if (!window.Peer) return netStatus('Module réseau non chargé. Vérifie ta connexion et recharge la page.', 'err');
+  netReset();
+  let code = ''; for (let i = 0; i < 5; i++) code += CODE_CHARS[(Math.random() * CODE_CHARS.length) | 0];
+  const peer = new Peer(NET_PREFIX + code.toLowerCase());
+  Object.assign(net, { peer, host: true });
+  netStatus('Création de la partie…');
+  peer.on('open', () => {
+    net.code = code; $('roomCode').textContent = code; $('room').hidden = false;
+    netStatus('Donne le code ou le lien à ton pote. En attente…');
+  });
+  peer.on('connection', c => {
+    if (net.conn) { c.on('open', () => { c.send({ t: 'full' }); setTimeout(() => c.close(), 500); }); return; }
+    bindConn(c);
+  });
+  peer.on('disconnected', () => { if (net.peer === peer && !peer.destroyed) peer.reconnect(); });
+  peer.on('error', err => {
+    if (net.peer !== peer) return;
+    if (err.type === 'unavailable-id' && tries < 3) return hostGame(tries + 1);
+    netError(err);
+  });
+}
+function joinGame(code) {
+  code = String(code || '').trim().toUpperCase();
+  if (code.length !== 5) return netStatus('Le code fait 5 caractères.', 'err');
+  if (!window.Peer) return netStatus('Module réseau non chargé. Vérifie ta connexion et recharge la page.', 'err');
+  netReset();
+  const peer = new Peer();
+  Object.assign(net, { peer, host: false });
+  netStatus(`Connexion à la partie ${code}…`);
+  peer.on('open', () => {
+    bindConn(peer.connect(NET_PREFIX + code.toLowerCase(), { serialization: 'json', reliable: true }));
+    setTimeout(() => { if (net.peer === peer && !net.ready) netStatus('Connexion impossible. Un des deux réseaux bloque peut-être le pair à pair (réseau d’entreprise, 4G…).', 'err'); }, 15000);
+  });
+  peer.on('error', err => { if (net.peer === peer) netError(err); });
+}
+function bindConn(c) {
+  net.conn = c;
+  c.on('open', () => {
+    if (net.conn !== c) return;
+    net.ready = true; net.lastRx = performance.now();
+    send('hello', { name: myName(), weapon: cfg.weapon });
+    refreshMenu();
+  });
+  c.on('data', m => { if (net.conn === c && m && typeof m === 'object') { net.lastRx = performance.now(); onNet(m); } });
+  c.on('close', () => { if (net.conn === c) onNetClose(); });
+  c.on('error', () => { if (net.conn === c) onNetClose(); });
+}
+function onNetClose() {
+  const name = net.oppName, wasOn = net.on, conn = net.conn;
+  net.conn = null; net.ready = false; net.on = false;
+  try { if (conn) conn.close(); } catch (e) {}
+  if (wasOn || game.state === 'over') toMenu();
+  if (net.host && net.peer && !net.peer.destroyed) netStatus(`${name} est parti. Le code ${net.code} reste ouvert pour un autre pote.`, 'err');
+  else if (net.peer) { netReset(); netStatus(`Connexion perdue avec ${name}.`, 'err'); }
+  refreshMenu();
+}
+function startOnline() {
+  if (!net.host || !net.ready) return;
+  const sw = Math.random() < .5;
+  send('start', { map: cfg.map, target: cfg.target, style: cfg.style, swap: sw });
+  startMatch(sw, true);
+}
+function sendState(dt) {
+  net.sendT -= dt; if (net.sendT > 0) return;
+  net.sendT = 1 / 30;
+  const p = player;
+  send('s', { p: arr(p.pos), v: arr(p.vel), y: +p.yaw.toFixed(4), pi: +p.pitch.toFixed(4), c: p.crouch ? 1 : 0, sc: +p.scope.toFixed(2), w: p.weapon, hp: Math.max(0, Math.round(p.health)), r: game.round });
+}
+const vec = a => Array.isArray(a) && a.length === 3 && a.every(Number.isFinite) ? new V3(a[0], a[1], a[2]) : null;
+function cleanInfo(i) {
+  i = i || {};
+  return {
+    w: WEAPONS[i.w] ? i.w : 'mk7', part: PARTS.includes(i.part) ? i.part : 'body', wall: !!i.wall, dist: Math.round(+i.dist || 0),
+    tags: Array.isArray(i.tags) ? i.tags.filter(t => Array.isArray(t) && TAG_OK.has(t[0])).map(t => [t[0], t[1] ? 1 : 0]) : []
+  };
+}
+function onNet(m) {
+  switch (m.t) {
+    case 'hello':
+      net.oppName = cleanName(m.name) || 'Pote';
+      if (WEAPONS[m.weapon]) setBotWeapon(m.weapon);
+      netStatus(`${net.oppName} est connecté. ` + (net.host ? 'Lance la partie quand tu veux.' : 'En attente du lancement par l’hôte…'), 'ok');
+      refreshMenu(); break;
+    case 'full': netReset(); netStatus('Cette partie est déjà pleine.', 'err'); break;
+    case 'start':
+      if (net.host || !MAPS[m.map] || !STYLES[m.style]) break;
+      cfg.map = m.map; cfg.style = m.style; cfg.target = [3, 5, 7].includes(m.target) ? m.target : 5;
+      startMatch(!m.swap, true, false); break;
+    case 'round': if (!net.host && net.on && game.state !== 'over') startRound(!m.swap); break;
+    case 's': {
+      const p = vec(m.p), v = vec(m.v); if (!p || !v || m.r !== game.round) break;
+      net.netPos.copy(p); net.netVel.copy(v); net.netT = now;
+      net.yaw = +m.y || 0; net.pitch = +m.pi || 0;
+      bot.crouch = !!m.c; bot.h = m.c ? H_CROUCH : H_STAND;
+      bot.scope = clamp(+m.sc || 0, 0, 1);
+      if (WEAPONS[m.w] && m.w !== bot.weapon) setBotWeapon(m.w);
+      if (Number.isFinite(m.hp)) bot.health = m.hp;
+      break;
+    }
+    case 'shot': if (net.on) remoteShot(m); break;
+    case 'hit': {
+      if (!net.on || game.state !== 'live' || !player.alive) break;
+      const i = cleanInfo(m);
+      playerHit(i.part, i.dist, i.wall, i.w, i.tags); break;
+    }
+    case 'died': if (net.host && net.on) hostRoundOver(true, cleanInfo(m.info)); break;
+    case 'roundEnd': if (!net.host && net.on && Array.isArray(m.sc)) applyRoundEnd(!m.hw, [m.sc[1] | 0, m.sc[0] | 0], cleanInfo(m.info)); break;
+    case 'quit': if (net.on) { toMenu(); netStatus(`${net.oppName} a quitté le match.`, 'err'); } break;
+  }
+}
+// tir de l'adversaire : trace, son et impact seulement, les dégâts arrivent par « hit »
+function remoteShot(m) {
+  const W = WEAPONS[m.w] || BW(), end = vec(m.e); if (!end) return;
+  const b = bot; b.model.updateMatrixWorld(true);
+  const tip = b.model.userData.tip.getWorldPosition(new V3());
+  tracer(tip, end, 0xff9a78);
+  b.flashT = .06; b.bolt = W.bolt ? W.cycle : 0;
+  const o = botEye(), d = camera.position.distanceTo(o), to = o.clone().sub(camera.position).normalize(), right = new V3(1, 0, 0).applyQuaternion(camera.quaternion);
+  sfx.shot(Math.max(.18, 1 - d / 60), to.dot(right) * .8, Math.min(1, d / 40), W.snd);
+  const n = vec(m.n); if (n) impact(end, n);
+  const dir = end.clone().sub(o), len = dir.length(); dir.divideScalar(len || 1);
+  const head = headPos(player), tp = head.clone().sub(o).dot(dir);
+  if (player.alive && tp > 0 && tp < len && o.clone().addScaledVector(dir, tp).distanceTo(head) < 1.6) sfx.whiz();
+}
+function hostRoundOver(hostWon, info) {
+  if (game.state !== 'live') return;
+  const sc = [game.score[0] + (hostWon ? 1 : 0), game.score[1] + (hostWon ? 0 : 1)];
+  send('roundEnd', { hw: hostWon, sc, info });
+  applyRoundEnd(hostWon, sc, info);
+}
+function applyRoundEnd(iWon, sc, info) {
+  if (game.state !== 'live') return;
+  game.score = sc; updateScore();
+  game.state = 'roundEnd'; game.timer = 2.8;
+  const W = WEAPONS[info.w];
+  if (iWon) {
+    bot.alive = false; bot.deadT = 0; bot.scope = 0;
+    $('hitm').classList.add('kill'); game.hitT = .2;
+    const tags = info.tags.length ? info.tags : [['ÉLIMINÉ', 0]];
+    countKill(tags, info.dist); callout(tags, info.dist);
+    feed(true, W.name, feedTags(tags));
+    banner('MANCHE GAGNÉE', `${sc[0]} – ${sc[1]}`, 2.6);
+  } else {
+    if (player.alive) { player.alive = false; player.deadT = 0; player.health = 0; player.scope = 0; }
+    feed(false, W.name, [info.wall ? 'WALLBANG' : '', info.part === 'head' ? 'HS' : ''].filter(Boolean));
+    banner('ÉLIMINÉ', `${net.oppName} t’a eu au ${W.name} ${info.part === 'head' ? 'en pleine tête' : info.part === 'legs' ? 'aux jambes' : 'au corps'} · ${info.dist} m`, 2.6);
+  }
+}
+// l'adversaire distant : on lisse vers sa dernière position connue, prolongée par sa vitesse
+function updateRemote(dt) {
+  const b = bot;
+  b.flashT -= dt; b.bolt = Math.max(0, b.bolt - dt);
+  if (!b.alive) { b.deadT += dt; return; }
+  const target = net.netPos.clone().addScaledVector(net.netVel, clamp(now - net.netT, 0, .12));
+  if (b.pos.distanceTo(target) > 3) b.pos.copy(target); else b.pos.lerp(target, Math.min(1, dt * 18));
+  b.vel.copy(net.netVel);
+  const k = Math.min(1, dt * 20);
+  b.yaw = wrap(b.yaw + wrap(net.yaw - b.yaw) * k); b.pitch += (net.pitch - b.pitch) * k;
+}
+function copyLink() {
+  const url = location.origin + location.pathname + '?join=' + net.code;
+  const done = () => netStatus('Lien copié. Envoie-le à ton pote, la partie se lance quand il arrive.', 'ok');
+  if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(url).then(done, () => netStatus('Lien : ' + url, 'ok'));
+  else netStatus('Lien : ' + url, 'ok');
+}
+addEventListener('pagehide', () => { if (net.on) send('quit'); try { if (net.peer) net.peer.destroy(); } catch (e) {} });
 
 // ================= Menus =================
 function buildMenu() {
@@ -1561,11 +1827,18 @@ function buildMenu() {
   seg('styleSeg', 'style'); seg('botWSeg', 'botWeapon');
   const slider = (id, key) => $(id).addEventListener('input', e => { cfg[key] = Number(e.target.value); saveCfg(); syncSliders(); });
   slider('sens', 'sens'); slider('scopeSens', 'scopeSens'); slider('pSens', 'sens'); slider('pScopeSens', 'scopeSens');
-  $('play').addEventListener('click', startMatch);
-  $('again').addEventListener('click', startMatch);
+  $('play').addEventListener('click', () => { if (isOnline()) startOnline(); else startMatch(); });
+  $('again').addEventListener('click', () => { if (net.on || isOnline()) startOnline(); else startMatch(); });
+  seg('netSeg', 'net');
+  $('netSeg').addEventListener('click', () => { if (!isOnline()) netReset(); });
+  $('nick').addEventListener('input', e => { cfg.nick = e.target.value; saveCfg(); });
+  $('host').addEventListener('click', () => hostGame());
+  $('join').addEventListener('click', () => joinGame($('joinCode').value));
+  $('joinCode').addEventListener('keydown', e => { if (e.key === 'Enter') joinGame($('joinCode').value); });
+  $('copyLink').addEventListener('click', copyLink);
   $('toMenu').addEventListener('click', toMenu);
   $('resume').addEventListener('click', () => { if (lockFailed) setPaused(false); else requestLock(); });
-  $('quit').addEventListener('click', () => { game.paused = false; toMenu(); });
+  $('quit').addEventListener('click', () => { game.paused = false; if (net.on) send('quit'); toMenu(); });
   if (matchMedia('(pointer: coarse)').matches) $('touchNote').hidden = false;
 }
 function syncSliders() {
@@ -1576,10 +1849,17 @@ function syncSliders() {
 function refreshMenu() {
   for (const b of document.querySelectorAll('[data-map]')) b.setAttribute('aria-pressed', String(b.dataset.map === cfg.map));
   for (const b of document.querySelectorAll('[data-weapon]')) b.setAttribute('aria-pressed', String(b.dataset.weapon === cfg.weapon));
+  const on = isOnline();
+  $('online').hidden = !on;
+  for (const el of document.querySelectorAll('.botonly')) el.hidden = on;
+  $('play').disabled = on && !(net.host && net.ready);
+  $('play').textContent = on ? 'LANCER' : 'JOUER';
+  $('playNote').textContent = !on ? '' : !net.ready ? 'Crée une partie ou rejoins celle d’un pote.' : net.host ? 'Map, style et manches : c’est toi qui choisis.' : 'L’hôte choisit la map et lance la partie.';
+  if ($('nick') !== document.activeElement) $('nick').value = cfg.nick || '';
   $('styleNote').textContent = cfg.style === 'cs'
     ? 'CS : vitesse et friction de Counter-Strike, précision seulement à l’arrêt, pas de bhop automatique.'
     : 'Arcade : bhop en maintenant Espace, air strafe, glissade et précision en mouvement.';
-  for (const [id, key] of [['diffSeg', 'diff'], ['targetSeg', 'target'], ['modeSeg', 'scopeMode'], ['styleSeg', 'style'], ['botWSeg', 'botWeapon']])
+  for (const [id, key] of [['diffSeg', 'diff'], ['targetSeg', 'target'], ['modeSeg', 'scopeMode'], ['styleSeg', 'style'], ['botWSeg', 'botWeapon'], ['netSeg', 'net']])
     for (const b of $(id).querySelectorAll('button')) b.setAttribute('aria-pressed', String(b.dataset.v === String(cfg[key])));
   syncSliders();
 }
@@ -1587,7 +1867,7 @@ function placeMenuBot() {
   spawnFacing(bot, curMap.spawnX); bot.scope = 0; bot.model.visible = true; bot.model.rotation.set(0, bot.yaw, 0);
 }
 function toMenu() {
-  game.state = 'menu'; game.paused = false;
+  game.state = 'menu'; game.paused = false; net.on = false; setText('oppName', 'BOT');
   if (document.pointerLockElement) document.exitPointerLock();
   loadMap(cfg.map); placeMenuBot(); refreshMenu(); showScreen('menu');
 }
@@ -1598,6 +1878,10 @@ resize();
 loadMap(cfg.map); placeMenuBot(); refreshMenu();
 showScreen('menu');
 $('loading').hidden = true;
+{ // lien d'invitation : ?join=CODE
+  const jc = new URLSearchParams(location.search).get('join');
+  if (jc) { cfg.net = 'online'; refreshMenu(); $('joinCode').value = jc.toUpperCase(); joinGame(jc); }
+}
 requestAnimationFrame(frame);
 </script>
 </body>
