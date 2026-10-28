@@ -15,7 +15,7 @@ Jeu de sniper 1v1 en vue à la première personne contre un bot ou un pote en li
 - Rendu soigné : ciel avec soleil et nuages, reflets d'environnement, textures en relief, bloom et étalonnage, fumée et poussière, bot animé, mains en vue subjective. Réglage Graphismes (Bas / Moyen / Élevé), avec passage automatique en Moyen si l'image rame
 - Quickscope, noscope, 360°, headshot, wallbang, kill sur le mur, dans le dos, au lancer
 
-Commandes : ZQSD / WASD, souris pour viser, clic droit lunette, clic gauche tirer (couteau : frapper), Espace sauter (contre un mur : rebondir, devant un rebord : se hisser), Maj ou C glisser, C s'accroupir, A/E se pencher, F lancer son arme, G prendre une arme au sol, R recommencer le parkour, P pause.
+Commandes (toutes personnalisables dans le menu, deux touches par action, souris et molette acceptées) : ZQSD / WASD, souris pour viser, clic droit lunette, clic gauche tirer (couteau : frapper), Espace ou molette sauter (contre un mur : rebondir, devant un rebord : se hisser), Maj ou C glisser, C s'accroupir, A/E se pencher, F lancer son arme, G prendre une arme au sol, R recommencer le parkour, P pause.
 
 ## Jeu en ligne
 
