@@ -141,6 +141,12 @@ html,body{height:100%;margin:0;overflow:hidden;background:var(--ink);color:var(-
 .keys dd{margin:0;color:var(--mute)}
 .tip{margin:0;font-size:14px;line-height:1.45;color:var(--mute);border-left:2px solid var(--amber);padding-left:12px;max-width:60ch}
 .tip b{color:var(--fg)}
+kbd{font:inherit;font-weight:700;font-size:12px;letter-spacing:.04em;padding:0 5px;border:1px solid var(--line);border-bottom-width:2px;color:var(--fg);white-space:nowrap}
+.binds{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:5px 8px;align-items:center;font-size:14px;max-width:460px}
+.binds span{color:var(--mute)}
+.binds button{appearance:none;font:inherit;font-weight:700;font-size:12px;letter-spacing:.04em;color:var(--fg);background:rgba(255,255,255,.04);border:1px solid var(--line);border-bottom-width:2px;padding:4px 8px;min-width:7.5em;cursor:pointer}
+.binds button.empty{color:var(--mute)}
+.binds button.wait{border-color:var(--amber);color:var(--amber)}
 .online{padding:12px;border:1px solid var(--line);background:rgba(255,255,255,.035)}
 .field{display:flex;flex-direction:column;gap:4px}
 .field label{font-weight:600}
@@ -278,24 +284,12 @@ button:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
     </div>
     <section class="sec">
       <h2>Commandes</h2>
-      <dl class="keys">
-        <div><dt>ZQSD</dt><dd>se déplacer (WASD en QWERTY)</dd></div>
-        <div><dt>Souris</dt><dd>viser</dd></div>
-        <div><dt>Clic D</dt><dd>lunette</dd></div>
-        <div><dt>Clic G</dt><dd>tirer</dd></div>
-        <div><dt>Espace</dt><dd>sauter · contre un mur : rebondir</dd></div>
-        <div><dt>Maj / C</dt><dd>glisser en courant</dd></div>
-        <div><dt>C</dt><dd>s'accroupir</dd></div>
-        <div><dt>A / E</dt><dd>se pencher (Q / E en QWERTY)</dd></div>
-        <div><dt>F</dt><dd>lancer son arme</dd></div>
-        <div><dt>G</dt><dd>prendre une arme au sol</dd></div>
-        <div><dt>R</dt><dd>recommencer (parkour)</dd></div>
-        <div><dt>P</dt><dd>pause</dd></div>
-      </dl>
+      <div class="binds" id="binds"></div>
+      <div class="netrow"><button type="button" class="btn ghost" id="bindReset">Touches par défaut</button><span class="note">Clique sur une case puis appuie sur une touche, un bouton de souris ou la molette · Échap annule · Retour arrière efface</span></div>
     </section>
-    <p class="tip"><b>Mouvement :</b> maintiens Espace pour enchaîner les sauts et tourne la souris en tenant Q ou D en l'air pour accélérer (air strafe). Saute contre un mur en avançant pour <b>courir dessus</b>, Espace pour rebondir vers le mur d'en face. Maj en pleine course pour glisser : dans une <b>pente</b> la glissade accélère, et une rampe montée vite fait décoller. On se hisse tout seul sur un rebord attrapé de justesse. Les <b>tremplins orange</b> envoient en hauteur, les <b>scies</b> tuent. Le Titan et la pompe te propulsent à l'opposé du tir.</p>
-    <p class="tip"><b>Armes :</b> tu pars au couteau (un coup dans le dos tue). Les armes sont posées sur la map, repérées par des anneaux orange : au couteau on les ramasse en passant, sinon G pour échanger. Pas de rechargement : une arme vide se lance avec F, et tue si elle touche la tête.</p>
-    <p class="tip"><b>Quickscope :</b> clic droit puis clic gauche dès que la lunette est en place (0,16 s). Sans lunette, la balle part dans un cône large : le noscope marche de près. Un <b>reflet orange</b> trahit le bot quand il est en lunette.</p>
+    <p class="tip"><b>Mouvement :</b> maintiens <kbd data-k="jump"></kbd> pour enchaîner les sauts et tourne la souris en tenant <kbd data-k="left"></kbd> ou <kbd data-k="right"></kbd> en l'air pour accélérer (air strafe). Saute contre un mur en avançant pour <b>courir dessus</b>, <kbd data-k="jump"></kbd> pour rebondir vers le mur d'en face. <kbd data-k="slide"></kbd> en pleine course pour glisser : dans une <b>pente</b> la glissade accélère, et une rampe montée vite fait décoller. On se hisse tout seul sur un rebord attrapé de justesse. Les <b>tremplins orange</b> envoient en hauteur, les <b>scies</b> tuent.</p>
+    <p class="tip"><b>Armes :</b> tu pars au couteau (un coup dans le dos tue). Les armes sont posées sur la map, repérées par des anneaux orange : au couteau on les ramasse en passant, sinon <kbd data-k="pick"></kbd> pour échanger. Pas de rechargement : une arme vide se lance avec <kbd data-k="throw"></kbd>, et tue si elle touche la tête.</p>
+    <p class="tip"><b>Quickscope :</b> <kbd data-k="scope"></kbd> puis <kbd data-k="fire"></kbd> dès que la lunette est en place (0,16 s). Sans lunette, la balle part dans un cône large : le noscope marche de près. Un <b>reflet orange</b> trahit le bot quand il est en lunette.</p>
     <div class="cta">
       <button type="button" class="btn" id="play">JOUER</button>
       <span class="note" id="playNote"></span>
@@ -431,6 +425,22 @@ const PH = 1 / 120; // pas fixe de la physique du joueur
 const cfg = Object.assign({ diff: 'normal', target: 5, sens: 1, scopeSens: 1, scopeMode: 'hold', net: 'solo', nick: '', map: 'random', gfx: 'high', mode: 'rounds', voice: 1 }, store.get('scopeduel.cfg', {}));
 if (cfg.net !== 'online') cfg.net = 'solo';
 for (const k of ['style', 'weapon', 'botWeapon']) delete cfg[k]; // réglages des anciennes versions
+// commandes : deux touches par action. Codes physiques (e.code), boutons de souris « MouseN », molette « WheelUp/WheelDown »
+const ACTIONS = [
+  ['forward', 'Avancer', ['KeyW', 'ArrowUp']], ['back', 'Reculer', ['KeyS', 'ArrowDown']],
+  ['left', 'Aller à gauche', ['KeyA', 'ArrowLeft']], ['right', 'Aller à droite', ['KeyD', 'ArrowRight']],
+  ['jump', 'Sauter · rebondir', ['Space', 'WheelDown']], ['slide', 'Glisser', ['ShiftLeft', '']],
+  ['crouch', 'S’accroupir (glisse en courant)', ['KeyC', '']],
+  ['leanL', 'Se pencher à gauche', ['KeyQ', '']], ['leanR', 'Se pencher à droite', ['KeyE', '']],
+  ['fire', 'Tirer · frapper', ['Mouse0', '']], ['scope', 'Lunette', ['Mouse2', '']],
+  ['throw', 'Lancer son arme', ['KeyF', '']], ['pick', 'Prendre une arme', ['KeyG', '']],
+  ['restart', 'Recommencer (parkour)', ['KeyR', '']], ['pause', 'Pause', ['KeyP', '']]
+];
+const defaultBinds = () => Object.fromEntries(ACTIONS.map(([a, , d]) => [a, d.slice()]));
+cfg.binds = Object.fromEntries(ACTIONS.map(([a, , d]) => {
+  const b = cfg.binds && cfg.binds[a];
+  return [a, Array.isArray(b) && b.length === 2 && b.every(c => typeof c === 'string') ? b.slice() : d.slice()];
+}));
 const saveCfg = () => store.set('scopeduel.cfg', cfg);
 
 // personnalités du bot : armes préférées, patience, distance de rush au couteau, envie de sauter, contournement
@@ -1424,7 +1434,7 @@ botFlash.visible = false; scene.add(botFlash);
 
 // ================= Entités =================
 const player = Object.assign(makeEnt(), {
-  weapon: 'knife', yaw: 0, pitch: 0, scope: 0, scopeStart: 0, wantScope: false, toggled: false, bolt: 0, ammo: 0, recoil: 0, eyeY: EYE_STAND, deadT: 0, bob: 0,
+  weapon: 'knife', yaw: 0, pitch: 0, scope: 0, scopeStart: 0, toggled: false, bolt: 0, ammo: 0, recoil: 0, eyeY: EYE_STAND, deadT: 0, bob: 0,
   prev: new V3(), acc: 0, coyote: 0, jumpBuf: 0, sliding: false, slideCd: 0, landDip: 0, roll: 0, fovKick: 0, tagT: 0, bloom: 0,
   lean: 0, leanOff: new V3(), wr: null, wrT: 0, wallLast: -1, wallGrace: 0, wallN: null, stepAcc: 0
 });
@@ -1437,7 +1447,6 @@ bot.model = makeBotModel();
 
 const game = { state: 'menu', mode: 'rounds', paused: false, timer: 0, round: 0, score: [0, 0], streak: [0, 0], swap: false, stats: null, bannerT: 0, callT: 0, hitT: 0, slowT: 0 };
 let now = 0, lockFailed = false, locked = false, slideQ = false;
-const keys = {};
 const yawHist = [];
 let vmKick = 0, vmSwayX = 0, vmSwayY = 0, flashT = 0, menuAng = 0;
 
@@ -1453,8 +1462,8 @@ const MODES = {
   rounds: { label: 'Manches', note: 'Une vie par manche, armes à ramasser, map différente à chaque manche.', rounds: true, pickups: true },
   dm: { label: 'Deathmatch', note: 'Réapparition immédiate et les armes au sol reviennent. Le premier au nombre de kills gagne.', respawn: true, pickups: true },
   gungame: { label: 'Gun Game', note: 'Chaque kill te donne l’arme suivante, munitions infinies. Le dernier kill se fait au couteau.', respawn: true },
-  knives: { label: 'Couteaux', note: 'Couteaux seulement, et ils se lancent (F) : un lancer qui touche tue. Le couteau revient en 1,4 s.', rounds: true, knives: true },
-  parkour: { label: 'Parkour', note: 'Seul contre la montre sur un parcours au-dessus de la lave. R pour recommencer, ton record est gardé.', course: true }
+  knives: { label: 'Couteaux', note: 'Couteaux seulement, et ils se lancent ({throw}) : un lancer qui touche tue. Le couteau revient en 1,4 s.', rounds: true, knives: true },
+  parkour: { label: 'Parkour', note: 'Seul contre la montre sur un parcours au-dessus de la lave. {restart} pour recommencer, ton record est gardé.', course: true }
 };
 const LADDER = ['titan', 'mk7', 'faucon', 'rafale', 'revolver', 'pompe', 'knife'];
 const DM_GOAL = { 3: 10, 5: 15, 7: 20 };
@@ -1496,7 +1505,7 @@ function resetBotAI() {
   bot.leanOff.set(0, 0, 0);
 }
 function resetPlayer() {
-  Object.assign(player, { scope: 0, wantScope: false, toggled: false, bolt: 0, recoil: 0, eyeY: EYE_STAND, tagT: 0, wr: null, wallLast: -1, wallGrace: 0, lean: 0,
+  Object.assign(player, { scope: 0, toggled: false, bolt: 0, recoil: 0, eyeY: EYE_STAND, tagT: 0, wr: null, wallLast: -1, wallGrace: 0, lean: 0,
     knifeT: 0, respawnT: 0, shake: 0, mantleCd: 0, life: (player.life || 0) + 1 });
   player.leanOff.set(0, 0, 0);
 }
@@ -1514,7 +1523,7 @@ function startRound(plan) {
   bot.model.rotation.set(0, bot.yaw, 0); bot.model.position.copy(bot.pos); bot.model.visible = true;
   game.state = 'countdown'; game.timer = MOVE.countdown;
   banner(MODE().rounds ? `MANCHE ${game.round}` : MODE().label.toUpperCase(), String(Math.ceil(game.timer)), 99); sfx.tick();
-  hint(game.mode === 'gungame' ? 'Gun Game : chaque kill change ton arme' : game.mode === 'knives' ? 'Couteaux : clic pour frapper, F pour lancer' : 'Au couteau : va chercher une arme (anneaux orange)', 3);
+  hint(game.mode === 'gungame' ? 'Gun Game : chaque kill change ton arme' : game.mode === 'knives' ? `Couteaux : ${kn('fire')} pour frapper, ${kn('throw')} pour lancer` : 'Au couteau : va chercher une arme (anneaux orange)', 3);
   updateScore();
 }
 // scies : va-et-vient le long de leur rail, mortelles au contact
@@ -1553,7 +1562,7 @@ function startRun() {
   setText('ptb', best ? 'Record ' + fmtTime(best) : 'Pas encore de record');
   game.state = 'countdown'; game.timer = MOVE.countdown;
   banner('PARKOUR', String(Math.ceil(game.timer)), 99); sfx.tick();
-  hint('Vise l’arrivée verte · R pour recommencer', 3);
+  hint(`Vise l’arrivée verte · ${kn('restart')} pour recommencer`, 3);
 }
 // retour au dernier point de passage (ou au départ)
 function toCheckpoint() {
@@ -1713,7 +1722,7 @@ function requestLock() {
 }
 function onLockError() {
   if (!inMatch()) return;
-  if (!locked) { lockFailed = true; setPaused(false); hint('Souris non verrouillée : garde le curseur dans la fenêtre. P pour la pause.', 5); }
+  if (!locked) { lockFailed = true; setPaused(false); hint(`Souris non verrouillée : garde le curseur dans la fenêtre. ${kn('pause')} pour la pause.`, 5); }
 }
 document.addEventListener('pointerlockchange', () => {
   locked = document.pointerLockElement === canvas;
@@ -1726,24 +1735,34 @@ function setPaused(p) {
   if (p) { syncSliders(); showScreen('pause'); keysReset(); }
   else if (inMatch()) showScreen('hud');
 }
-function keysReset() { for (const k in keys) keys[k] = false; player.wantScope = false; }
+function keysReset() { for (const k in keys) keys[k] = false; }
 
 // ================= Entrées =================
-addEventListener('keydown', e => {
-  if ((e.code === 'Space' || e.code === 'Tab') && !(e.target instanceof HTMLInputElement)) e.preventDefault();
-  if (e.code === 'KeyR' && game.state === 'over' && game.mode === 'parkour' && !net.on) { startMatch(); return; }
-  if (!inMatch()) return;
-  if (e.code === 'KeyP' || (e.code === 'Escape' && lockFailed)) { setPaused(!game.paused); if (!game.paused && !lockFailed) requestLock(); return; }
-  if (game.paused) return;
-  if (!e.repeat) {
-    if (e.code === 'Space') player.jumpBuf = MOVE.buffer;
-    if (e.code === 'KeyC') slideQ = true;
-    if (e.code === 'KeyF') throwQ = true;
-    if (e.code === 'KeyG') swapQ = true;
-    if (e.code === 'KeyR' && game.mode === 'parkour') { startMatch(); return; }
-    if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') slideQ = true;
+const keys = {};
+const held = a => !!(keys[cfg.binds[a][0]] || keys[cfg.binds[a][1]]);
+const actionsOf = code => code ? ACTIONS.map(([a]) => a).filter(a => cfg.binds[a].includes(code)) : [];
+// une touche, un bouton ou un cran de molette vient d'être pressé : on déclenche les actions qui y sont liées
+function press(code) {
+  for (const a of actionsOf(code)) {
+    if (a === 'pause') { setPaused(!game.paused); if (!game.paused && !lockFailed) requestLock(); return; }
+    if (game.paused) continue;
+    if (a === 'restart' && game.mode === 'parkour') { startMatch(); return; }
+    if (a === 'jump') player.jumpBuf = MOVE.buffer;
+    if (a === 'slide' || a === 'crouch') slideQ = true;
+    if (a === 'throw') throwQ = true;
+    if (a === 'pick') swapQ = true;
+    if (a === 'fire') tryFire();
+    if (a === 'scope' && cfg.scopeMode !== 'hold') player.toggled = !player.toggled;
   }
-  keys[e.code] = true;
+}
+addEventListener('keydown', e => {
+  const typing = e.target instanceof HTMLInputElement;
+  if (!typing && (e.code === 'Space' || e.code === 'Tab' || (inMatch() && actionsOf(e.code).length))) e.preventDefault();
+  if (game.state === 'over' && game.mode === 'parkour' && !net.on && actionsOf(e.code).includes('restart')) { startMatch(); return; }
+  if (!inMatch()) return;
+  if (e.code === 'Escape' && lockFailed) { setPaused(!game.paused); return; }
+  if (!game.paused) keys[e.code] = true;
+  if (!e.repeat) press(e.code);
 });
 addEventListener('keyup', e => { keys[e.code] = false; });
 addEventListener('blur', keysReset);
@@ -1752,11 +1771,17 @@ addEventListener('contextmenu', e => { if (inMatch()) e.preventDefault(); });
 canvas.addEventListener('mousedown', e => {
   if (!inMatch()) return;
   if (!locked && !lockFailed) { requestLock(); return; }
-  if (game.paused) return;
-  if (e.button === 0) tryFire();
-  if (e.button === 2) { if (cfg.scopeMode === 'hold') player.wantScope = true; else player.toggled = !player.toggled; }
+  const code = 'Mouse' + e.button;
+  if (e.button > 2) e.preventDefault(); // boutons 4 et 5 : pas de page précédente / suivante
+  if (!game.paused) keys[code] = true;
+  press(code);
 });
-addEventListener('mouseup', e => { if (e.button === 2) player.wantScope = false; });
+addEventListener('mouseup', e => { keys['Mouse' + e.button] = false; if (e.button > 2 && inMatch()) e.preventDefault(); });
+addEventListener('auxclick', e => { if (inMatch()) e.preventDefault(); });
+addEventListener('wheel', e => {
+  if (!inMatch() || game.paused || (!locked && !lockFailed) || !e.deltaY) return;
+  press(e.deltaY > 0 ? 'WheelDown' : 'WheelUp');
+}, { passive: true });
 addEventListener('mousemove', e => {
   if (!inMatch() || game.paused || (!locked && !lockFailed)) return;
   if (!player.alive) return;
@@ -1926,7 +1951,7 @@ function startSlide(p) {
   if (p.slideCd <= 0) { const k = Math.max(sp, Math.min(MOVE.max, sp + MOVE.slideBoost)) / sp; p.vel.x *= k; p.vel.z *= k; p.slideCd = MOVE.slideCd; }
   sfx.slide();
 }
-function slideHeld() { return keys.KeyC || keys.ShiftLeft || keys.ShiftRight; }
+function slideHeld() { return held('crouch') || held('slide'); }
 // course sur les murs
 function startWallrun(p, w) { p.wr = w; p.wrT = 0; p.vel.y = Math.max(p.vel.y, 2); p.sliding = false; sfx.slide(.5, 0); }
 function endWallrun(p, grace) {
@@ -1959,7 +1984,7 @@ function ledgeTop(e, f) {
   return null;
 }
 function moveInput() {
-  return { f: (keys.KeyW ? 1 : 0) - (keys.KeyS ? 1 : 0), r: (keys.KeyD ? 1 : 0) - (keys.KeyA ? 1 : 0) };
+  return { f: (held('forward') ? 1 : 0) - (held('back') ? 1 : 0), r: (held('right') ? 1 : 0) - (held('left') ? 1 : 0) };
 }
 function stepPlayer(h) {
   const p = player, canMove = game.state !== 'countdown' && p.alive;
@@ -1978,7 +2003,7 @@ function stepPlayer(h) {
   if (slideQ) { slideQ = false; if (p.onGround && canMove) startSlide(p); }
   let jumped = false;
   if (canMove && checkPad(p)) { jumped = true; p.sliding = false; endWallrun(p, false); p.shake = (p.shake || 0) + .3; }
-  if (!jumped && canMove && (keys.Space || p.jumpBuf > 0) && p.coyote > 0) {
+  if (!jumped && canMove && (held('jump') || p.jumpBuf > 0) && p.coyote > 0) {
     p.vel.y = MOVE.jump; p.onGround = false; p.coyote = 0; p.jumpBuf = 0; p.sliding = false; jumped = true; sfx.jump();
   }
   if (canMove && !jumped) {
@@ -2018,7 +2043,7 @@ function stepPlayer(h) {
   // pas de plafond net, la friction au sol suffit ; seulement une limite de sécurité
   const sp = Math.hypot(p.vel.x, p.vel.z);
   if (sp > MOVE.cap) { p.vel.x *= MOVE.cap / sp; p.vel.z *= MOVE.cap / sp; }
-  setCrouch(p, (!!keys.KeyC && canMove) || p.sliding);
+  setCrouch(p, (held('crouch') && canMove) || p.sliding);
   const vy = p.vel.y - GRAV * h;
   moveEntity(p, h);
   if (!wasGround && p.onGround) {
@@ -2035,7 +2060,7 @@ function updatePlayer(dt) {
   if (n >= 10) p.acc = 0;
   const hs = Math.hypot(p.vel.x, p.vel.z), W = PW();
   if (p.alive) {
-    const want = (cfg.scopeMode === 'hold' ? p.wantScope : p.toggled) && !W.melee && (p.bolt <= 0 || !W.bolt);
+    const want = (cfg.scopeMode === 'hold' ? held('scope') : p.toggled) && !W.melee && (p.bolt <= 0 || !W.bolt);
     if (want) { if (p.scope <= .001) { p.scopeStart = now; sfx.scope(); } p.scope = Math.min(1, p.scope + dt / W.zoomT); }
     else p.scope = Math.max(0, p.scope - dt / (W.zoomT * .7));
     if (p.bolt > 0) p.bolt -= dt;
@@ -2052,8 +2077,8 @@ function updatePlayer(dt) {
   const eyeT = p.sliding ? EYE_CROUCH - .12 : p.crouch ? EYE_CROUCH : EYE_STAND;
   p.eyeY += (eyeT - p.eyeY) * Math.min(1, dt * (p.sliding ? 18 : 12));
 
-  // se pencher (A/E en AZERTY, Q/E en QWERTY) ; le décalage est raccourci si un mur gêne
-  const leanT = canMove && p.onGround && !p.sliding ? (keys.KeyE ? 1 : 0) - (keys.KeyQ ? 1 : 0) : 0;
+  // se pencher ; le décalage est raccourci si un mur gêne
+  const leanT = canMove && p.onGround && !p.sliding ? (held('leanR') ? 1 : 0) - (held('leanL') ? 1 : 0) : 0;
   p.lean += (leanT - p.lean) * Math.min(1, dt * 10);
   const R = new V3(Math.cos(p.yaw), 0, -Math.sin(p.yaw));
   let lo = p.lean * .4;
@@ -2437,9 +2462,9 @@ function updateHud(dt) {
     $('pips').classList.toggle('many', W.mag > 6);
   }
   let st = 'PRÊT', prog = 1;
-  if (W.melee) st = game.mode === 'knives' ? (p.knifeT > 0 ? 'LANCÉ…' : 'F : LANCER') : MODE().pickups ? 'CHERCHE UNE ARME' : 'COUTEAU';
+  if (W.melee) st = game.mode === 'knives' ? (p.knifeT > 0 ? 'LANCÉ…' : `${kn('throw')} : LANCER`) : MODE().pickups ? 'CHERCHE UNE ARME' : 'COUTEAU';
   else if (p.bolt > 0 && W.bolt) { st = 'CULASSE'; prog = 1 - p.bolt / W.cycle; }
-  else if (p.ammo === 0) { st = 'VIDE · F : LANCER'; prog = 0; }
+  else if (p.ammo === 0) { st = `VIDE · ${kn('throw')} : LANCER`; prog = 0; }
   setText('ammoState', st);
   const hs = Math.hypot(p.vel.x, p.vel.z);
   setText('spdv', hs.toFixed(1));
@@ -2612,8 +2637,8 @@ function updatePickups(dt) {
   const p = player;
   if (p.alive) {
     const q = nearPickup(p, 1.1);
-    if (q && (PW().melee || swapQ)) takePickup(q, p); // au couteau on ramasse en passant, sinon G pour échanger
-    else if (q && hintT <= 0) hint(`G : prendre ${WEAPONS[q.key].name}`, .3);
+    if (q && (PW().melee || swapQ)) takePickup(q, p); // au couteau on ramasse en passant, sinon on échange avec la touche « prendre »
+    else if (q && hintT <= 0) hint(`${kn('pick')} : prendre ${WEAPONS[q.key].name}`, .3);
   }
   swapQ = false;
   if (!net.on && bot.alive && BW().melee) { const q = nearPickup(bot, 1.1); if (q) takePickup(q, bot); }
@@ -2891,6 +2916,47 @@ function copyLink() {
 }
 addEventListener('pagehide', () => { if (net.on) send('quit'); try { if (net.peer) net.peer.destroy(); } catch (e) {} });
 
+// ================= Commandes personnalisables =================
+let rebinding = null, bindAt = 0, layoutMap = null;
+const KEY_NAMES = { Space: 'Espace', ShiftLeft: 'Maj G', ShiftRight: 'Maj D', ControlLeft: 'Ctrl G', ControlRight: 'Ctrl D', AltLeft: 'Alt', AltRight: 'Alt Gr',
+  Tab: 'Tab', Enter: 'Entrée', CapsLock: 'Verr. Maj', Backquote: '²', ArrowUp: '↑', ArrowDown: '↓', ArrowLeft: '←', ArrowRight: '→',
+  Mouse0: 'Clic G', Mouse1: 'Clic molette', Mouse2: 'Clic D', Mouse3: 'Souris 4', Mouse4: 'Souris 5', WheelUp: 'Molette ↑', WheelDown: 'Molette ↓' };
+// sans carte du clavier (Firefox), un navigateur en français est supposé en AZERTY pour nommer les lettres
+const AZERTY = { KeyQ: 'A', KeyW: 'Z', KeyA: 'Q', KeyZ: 'W', KeyM: ',', Semicolon: 'M' };
+function keyName(code) {
+  if (!code) return '—';
+  if (KEY_NAMES[code]) return KEY_NAMES[code];
+  const ch = layoutMap && layoutMap.get(code);
+  if (ch) return ch.toUpperCase();
+  if (!layoutMap && /^fr/i.test(navigator.language || '') && AZERTY[code]) return AZERTY[code];
+  return code.replace(/^Key|^Digit/, '').replace(/^Numpad/, 'Pavé ');
+}
+function kn(a) { const b = cfg.binds[a]; return keyName(b[0] || b[1]); }
+function renderBinds() {
+  $('binds').innerHTML = ACTIONS.map(([a, label]) => `<span>${label}</span>` + [0, 1].map(i => {
+    const c = cfg.binds[a][i], wait = rebinding && rebinding.a === a && rebinding.i === i;
+    return `<button type="button" data-a="${a}" data-i="${i}" class="${wait ? 'wait' : c ? '' : 'empty'}">${wait ? 'Appuie…' : keyName(c)}</button>`;
+  }).join('')).join('');
+  for (const k of document.querySelectorAll('kbd[data-k]')) k.textContent = kn(k.dataset.k);
+}
+// une touche ne sert qu'à une action : on la retire ailleurs avant de l'attribuer
+function setBind(code) {
+  const { a, i } = rebinding; rebinding = null; bindAt = performance.now();
+  if (code) for (const [b] of ACTIONS) cfg.binds[b] = cfg.binds[b].map(c => c === code ? '' : c);
+  cfg.binds[a][i] = code; saveCfg(); renderBinds(); refreshMenu();
+}
+addEventListener('keydown', e => {
+  if (!rebinding) return;
+  e.preventDefault(); e.stopImmediatePropagation();
+  if (e.code === 'Escape') { rebinding = null; renderBinds(); }
+  else setBind(e.code === 'Backspace' || e.code === 'Delete' ? '' : e.code);
+}, true);
+addEventListener('mousedown', e => { if (rebinding) { e.preventDefault(); e.stopImmediatePropagation(); setBind('Mouse' + e.button); } }, true);
+addEventListener('wheel', e => { if (rebinding && e.deltaY) { e.preventDefault(); setBind(e.deltaY > 0 ? 'WheelDown' : 'WheelUp'); } }, { capture: true, passive: false });
+addEventListener('contextmenu', e => { if (rebinding || performance.now() - bindAt < 400) e.preventDefault(); }, true);
+addEventListener('auxclick', e => { if (rebinding || performance.now() - bindAt < 400) e.preventDefault(); }, true);
+if (navigator.keyboard && navigator.keyboard.getLayoutMap) navigator.keyboard.getLayoutMap().then(m => { layoutMap = m; renderBinds(); refreshMenu(); }).catch(() => {});
+
 // ================= Menus =================
 function buildMenu() {
   const arenas = Object.entries(MAPS).filter(([, m]) => !m.course);
@@ -2918,6 +2984,11 @@ function buildMenu() {
   $('join').addEventListener('click', () => joinGame($('joinCode').value));
   $('joinCode').addEventListener('keydown', e => { if (e.key === 'Enter') joinGame($('joinCode').value); });
   $('copyLink').addEventListener('click', copyLink);
+  $('binds').addEventListener('click', e => {
+    const b = e.target.closest('button[data-a]'); if (!b || performance.now() - bindAt < 400) return; // le clic qui vient d'attribuer ne relance pas
+    rebinding = { a: b.dataset.a, i: +b.dataset.i }; renderBinds();
+  });
+  $('bindReset').addEventListener('click', () => { cfg.binds = defaultBinds(); rebinding = null; saveCfg(); renderBinds(); refreshMenu(); });
   $('toMenu').addEventListener('click', toMenu);
   $('resume').addEventListener('click', () => { if (lockFailed) setPaused(false); else requestLock(); });
   $('quit').addEventListener('click', () => { game.paused = false; if (net.on) send('quit'); toMenu(); });
@@ -2941,7 +3012,7 @@ function refreshMenu() {
   $('playNote').textContent = !on ? '' : !net.ready ? 'Crée une partie ou rejoins celle d’un pote.' : net.host ? 'Mode, map et objectif : c’est toi qui choisis.' : 'L’hôte choisit la map et lance la partie.';
   if ($('nick') !== document.activeElement) $('nick').value = cfg.nick || '';
   const md = MODES[cfg.mode] || MODES.rounds;
-  $('modeNote').textContent = md.note;
+  $('modeNote').textContent = md.note.replace(/\{(\w+)\}/g, (_, a) => kn(a));
   $('secTarget').hidden = cfg.mode === 'gungame' || cfg.mode === 'parkour';
   $('targetLbl').textContent = cfg.mode === 'dm' ? 'Kills pour gagner' : 'Manches gagnantes';
   for (const b of $('targetSeg').querySelectorAll('button')) b.textContent = cfg.mode === 'dm' ? DM_GOAL[b.dataset.v] : b.dataset.v;
@@ -2953,13 +3024,14 @@ function placeMenuBot() {
   spawnFacing(bot, curMap.spawnX); bot.scope = 0; bot.model.visible = !curMap.course; bot.model.rotation.set(0, bot.yaw, 0);
 }
 function toMenu() {
-  game.state = 'menu'; game.paused = false; game.slowT = 0; net.on = false; setText('oppName', 'BOT'); $('top').hidden = false; $('ptimer').hidden = true;
+  game.state = 'menu'; game.paused = false; game.slowT = 0; rebinding = null; net.on = false; setText('oppName', 'BOT'); $('top').hidden = false; $('ptimer').hidden = true;
   if (document.pointerLockElement) document.exitPointerLock();
   setupPickups(null); clearThrown();
   loadMap(menuMap()); placeMenuBot(); refreshMenu(); showScreen('menu');
 }
 
 buildMenu();
+renderBinds();
 showGun('knife');
 applyGfx();
 loadMap(menuMap()); placeMenuBot(); refreshMenu();
