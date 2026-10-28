@@ -96,15 +96,8 @@ html,body{height:100%;margin:0;overflow:hidden;background:var(--ink);color:var(-
 #spdbar{grid-column:1/-1;width:110px;height:3px;margin-top:4px;background:rgba(255,255,255,.12)}
 #spdbar i{display:block;height:100%;width:0;background:var(--fg)}
 #spd.fast b{color:var(--amber)} #spd.fast #spdbar i{background:var(--amber)}
-#spd.inacc b,#spd.inacc span{color:var(--red)} #spd.inacc #spdbar i{background:var(--red)}
 #pips.many i{width:5px;height:20px}
 #feed .fw{font-size:11px;letter-spacing:.1em;color:var(--mute);font-weight:700}
-.wstats{display:grid;grid-template-columns:auto 1fr;gap:3px 8px;align-items:center;margin-top:6px;font-size:11px;letter-spacing:.1em;color:var(--mute);text-transform:uppercase}
-.wstats i{display:flex;gap:2px}
-.wstats i b{display:block;width:100%;height:4px;background:rgba(255,255,255,.12)}
-.wstats i b.on{background:var(--fg)}
-.card[aria-pressed="true"] .wstats i b.on{background:var(--amber)}
-.weapons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
 #hint{position:absolute;left:50%;bottom:calc(86px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);font-size:14px;font-weight:600;letter-spacing:.06em;color:var(--fg);text-shadow:0 1px 3px #000;white-space:nowrap}
 
 /* ---------- Menus ---------- */
@@ -229,26 +222,6 @@ button:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
       <h2>Map</h2>
       <div class="maps" id="maps"></div>
     </section>
-    <section class="sec">
-      <h2>Arme</h2>
-      <div class="weapons" id="weapons"></div>
-      <p class="note" id="weaponsNote" hidden>Style STRAFTAT : tu pars au couteau et les armes sont posées sur la map (anneaux orange). Pas de rechargement : une arme vide se lance avec F.</p>
-    </section>
-    <div class="row">
-      <section class="sec">
-        <h2>Style de jeu</h2>
-        <div class="seg" id="styleSeg">
-          <button type="button" data-v="arcade">STRAFTAT</button><button type="button" data-v="cs">CS</button>
-        </div>
-      </section>
-      <section class="sec botonly" id="secBotW">
-        <h2>Arme du bot</h2>
-        <div class="seg" id="botWSeg">
-          <button type="button" data-v="random">Au hasard</button><button type="button" data-v="same">Comme moi</button>
-        </div>
-      </section>
-    </div>
-    <p class="note" id="styleNote"></p>
     <div class="row">
       <section class="sec botonly">
         <h2>Bot</h2>
@@ -281,19 +254,16 @@ button:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
         <div><dt>Clic D</dt><dd>lunette</dd></div>
         <div><dt>Clic G</dt><dd>tirer</dd></div>
         <div><dt>Espace</dt><dd>sauter · contre un mur : rebondir</dd></div>
-        <div><dt>Maj / C</dt><dd>glisser en courant (STRAFTAT)</dd></div>
+        <div><dt>Maj / C</dt><dd>glisser en courant</dd></div>
         <div><dt>C</dt><dd>s'accroupir</dd></div>
         <div><dt>A / E</dt><dd>se pencher (Q / E en QWERTY)</dd></div>
-        <div><dt>F</dt><dd>lancer son arme (STRAFTAT)</dd></div>
+        <div><dt>F</dt><dd>lancer son arme</dd></div>
         <div><dt>G</dt><dd>prendre une arme au sol</dd></div>
-        <div><dt>1 – 4</dt><dd>changer d'arme avant le GO (CS)</dd></div>
-        <div><dt>Maj</dt><dd>marcher, plus précis (CS)</dd></div>
-        <div><dt>R</dt><dd>recharger (CS)</dd></div>
         <div><dt>P</dt><dd>pause</dd></div>
       </dl>
     </section>
-    <p class="tip"><b>Style CS :</b> tu n'es précis qu'à l'arrêt ou presque. Avant de tirer, lâche la touche et tape brièvement la direction opposée pour t'arrêter net (contre-strafe). Le compteur en bas passe en <b>PRÉCIS</b> quand tu peux tirer. Une balle reçue te ralentit.</p>
-    <p class="tip"><b>Style STRAFTAT :</b> maintiens Espace pour enchaîner les sauts et tourne la souris en tenant Q ou D en l'air pour accélérer (air strafe). Saute contre un mur en avançant pour <b>courir dessus</b>, Espace pour rebondir vers le mur d'en face. Maj en pleine course pour glisser, les <b>tremplins orange</b> envoient en hauteur. Le Titan et la pompe te propulsent à l'opposé du tir.</p>
+    <p class="tip"><b>Mouvement :</b> maintiens Espace pour enchaîner les sauts et tourne la souris en tenant Q ou D en l'air pour accélérer (air strafe). Saute contre un mur en avançant pour <b>courir dessus</b>, Espace pour rebondir vers le mur d'en face. Maj en pleine course pour glisser, les <b>tremplins orange</b> envoient en hauteur. Le Titan et la pompe te propulsent à l'opposé du tir.</p>
+    <p class="tip"><b>Armes :</b> tu pars au couteau (un coup dans le dos tue). Les armes sont posées sur la map, repérées par des anneaux orange : au couteau on les ramasse en passant, sinon G pour échanger. Pas de rechargement : une arme vide se lance avec F, et tue si elle touche la tête.</p>
     <p class="tip"><b>Quickscope :</b> clic droit puis clic gauche dès que la lunette est en place (0,16 s). Sans lunette, la balle part dans un cône large : le noscope marche de près. Un <b>reflet orange</b> trahit le bot quand il est en lunette.</p>
     <div class="cta">
       <button type="button" class="btn" id="play">JOUER</button>
@@ -359,77 +329,64 @@ const H_STAND = 1.8, H_CROUCH = 1.25, EYE_STAND = 1.62, EYE_CROUCH = 1.08;
 // Armes : zoomT = temps de mise en lunette, cycle = délai entre deux tirs, ns = cône sans lunette (rad), pen = mètres traversables
 const WEAPONS = {
   mk7: {
-    name: 'MK7', kind: 'Culasse', desc: 'Le sniper de référence. Une balle au corps suffit.',
-    dmg: { head: 200, body: 100, legs: 70 }, zoomT: .16, fov: 19, cycle: 1.0, bolt: true, mag: 5, reload: 2.1, ns: .075, move: 1, pen: 0, recoil: .055,
-    snd: { vol: .9, hi: 7000, lo: 150, len: .55 }, bars: [4, 3, 2, 3],
+    name: 'MK7',
+    dmg: { head: 200, body: 100, legs: 70 }, zoomT: .16, fov: 19, cycle: 1.0, bolt: true, mag: 5, ns: .075, move: 1, pen: 0, recoil: .055,
+    snd: { vol: .9, hi: 7000, lo: 150, len: .55 },
     gun: { len: .56, r: .011, body: 0x2a2d30, wood: 0x55633a, scopeR: .022, scopeL: .34, mag: [.04, .06, .08] }
   },
   faucon: {
-    name: 'FAUCON', kind: 'Léger', desc: 'Lunette quasi instantanée et on court plus vite. Vise la tête.',
-    dmg: { head: 150, body: 75, legs: 50 }, zoomT: .1, fov: 26, cycle: .55, bolt: true, mag: 8, reload: 1.7, ns: .05, move: 1.1, pen: 0, recoil: .04,
-    snd: { vol: .7, hi: 9000, lo: 220, len: .4 }, bars: [3, 5, 3, 5],
+    name: 'FAUCON',
+    dmg: { head: 150, body: 75, legs: 50 }, zoomT: .1, fov: 26, cycle: .55, bolt: true, mag: 8, ns: .05, move: 1.1, pen: 0, recoil: .04,
+    snd: { vol: .7, hi: 9000, lo: 220, len: .4 },
     gun: { len: .42, r: .009, body: 0x3b3f44, wood: 0x8b6a3e, scopeR: .018, scopeL: .26, mag: [.035, .05, .06] }
   },
   titan: {
-    name: 'TITAN', kind: 'Calibre .50', desc: 'Lourd et lent, mais tue partout et traverse les murs fins.',
-    dmg: { head: 300, body: 150, legs: 110 }, zoomT: .24, fov: 13, cycle: 1.5, bolt: true, mag: 4, reload: 2.8, ns: .09, move: .88, pen: .9, recoil: .09,
-    snd: { vol: 1.1, hi: 5000, lo: 105, len: .8 }, bars: [5, 2, 1, 2],
+    name: 'TITAN',
+    dmg: { head: 300, body: 150, legs: 110 }, zoomT: .24, fov: 13, cycle: 1.5, bolt: true, mag: 4, ns: .09, move: .88, pen: .9, recoil: .09, kick: 8,
+    snd: { vol: 1.1, hi: 5000, lo: 105, len: .8 },
     gun: { len: .7, r: .016, body: 0x1e2022, wood: 0x2f3236, scopeR: .03, scopeL: .4, mag: [.05, .08, .1] }
   },
   rafale: {
-    name: 'RAFALE', kind: 'Semi-auto', desc: 'Tire aussi vite que tu cliques. Deux balles au corps, une à la tête.',
-    dmg: { head: 110, body: 55, legs: 40 }, zoomT: .14, fov: 30, cycle: .28, bolt: false, mag: 10, reload: 2.2, ns: .06, move: 1, pen: 0, recoil: .035,
-    snd: { vol: .75, hi: 8000, lo: 170, len: .35 }, bars: [2, 4, 5, 3],
+    name: 'RAFALE',
+    dmg: { head: 110, body: 55, legs: 40 }, zoomT: .14, fov: 30, cycle: .28, bolt: false, mag: 10, ns: .06, move: 1, pen: 0, recoil: .035,
+    snd: { vol: .75, hi: 8000, lo: 170, len: .35 },
     gun: { len: .48, r: .012, body: 0x34383c, wood: 0x34383c, scopeR: .02, scopeL: .22, mag: [.045, .1, .07] }
   },
-  // armes posées sur la map en style STRAFTAT (pas dans le menu)
   pompe: {
-    name: 'POMPE', au: 'à la', kind: 'Pompe', desc: '', pickOnly: true,
+    name: 'POMPE', au: 'à la',
     dmg: { head: 34, body: 24, legs: 16 }, pellets: 9, pelletSpread: .065, falloff: [7, 20], range: 13, kick: 7,
-    zoomT: .12, fov: 64, scope: false, cycle: .85, bolt: true, mag: 5, reload: 2.4, ns: 0, move: 1, pen: 0, recoil: .07,
+    zoomT: .12, fov: 64, scope: false, cycle: .85, bolt: true, mag: 5, ns: 0, move: 1, pen: 0, recoil: .07,
     snd: { vol: 1, hi: 4200, lo: 90, len: .5 },
     gun: { len: .46, r: .017, body: 0x2b2724, wood: 0x6b4a2b, noScope: true, pump: true, mag: [.03, .03, .05] }
   },
   revolver: {
-    name: 'REVOLVER', kind: 'Revolver', desc: '', pickOnly: true,
+    name: 'REVOLVER',
     dmg: { head: 200, body: 70, legs: 45 }, range: 70,
-    zoomT: .12, fov: 56, scope: false, cycle: .42, bolt: false, mag: 6, reload: 2, ns: .035, move: 1.06, pen: 0, recoil: .06,
+    zoomT: .12, fov: 56, scope: false, cycle: .42, bolt: false, mag: 6, ns: .035, move: 1.06, pen: 0, recoil: .06,
     snd: { vol: .85, hi: 6500, lo: 140, len: .4 },
     gun: { len: .2, r: .012, body: 0x3a3d40, wood: 0x5a3b22, noScope: true, short: true }
   },
   knife: {
-    name: 'COUTEAU', kind: 'Mêlée', desc: '', pickOnly: true, melee: true,
+    name: 'COUTEAU', melee: true,
     dmg: { head: 55, body: 55, legs: 55 }, back: 200, reach: 2.3,
-    zoomT: .1, fov: BASE_FOV, scope: false, cycle: .5, bolt: false, mag: 0, reload: 0, ns: 0, move: 1.08, pen: 0, recoil: 0,
+    zoomT: .1, fov: BASE_FOV, scope: false, cycle: .5, bolt: false, mag: 0, ns: 0, move: 1.08, pen: 0, recoil: 0,
     snd: { vol: .5, hi: 3000, lo: 300, len: .15 }
   }
 };
-const WKEYS = Object.keys(WEAPONS).filter(k => !WEAPONS[k].pickOnly); // armes du menu (style CS)
-const PICK_POOL = Object.keys(WEAPONS).filter(k => !WEAPONS[k].melee); // armes posées au sol (style STRAFTAT)
+const PICK_POOL = Object.keys(WEAPONS).filter(k => !WEAPONS[k].melee); // armes posées au sol
 const PW = () => WEAPONS[player.weapon], BW = () => WEAPONS[bot.weapon];
-// Deux styles de jeu. Vitesses en m/s (CS : 250 unités/s ≈ 6,35 m/s au couteau, l'AWP à 200, 100 en lunette).
-const STYLES = {
-  cs: {
-    label: 'CS', speed: 5.1, walk: .52, scoped: .5, crouch: .34, accel: 5.5, friction: 5.2, stop: 2.54,
-    airAccel: 12, airCap: .76, max: 9, jump: 6.6, coyote: 0, buffer: .06,
-    autoBhop: false, slide: false, landMul: .8, moveInacc: true, tag: true, camFx: false, countdown: 3, roundEnd: 2.8, hz: 30
-  },
-  arcade: {
-    label: 'STRAFTAT', speed: 7, walk: .51, scoped: .74, crouch: .46, accel: 11, friction: 5, stop: 2.2,
-    airAccel: 70, airCap: .95, max: 14, jump: 6.6, coyote: .1, buffer: .13,
-    autoBhop: true, slide: true, landMul: 1, moveInacc: false, tag: false, camFx: true,
-    slideStart: 5, slideEnd: 3, slideBoost: 3.2, slideFric: .9, slideCd: .9,
-    wallrun: true, wrTime: 1.3, wrSpeed: 7.5, wrGrav: .22, airFree: true, pickups: true, countdown: 1.5, roundEnd: 1.6, hz: 60
-  }
+// Mouvement façon STRAFTAT, en m/s : bhop, air strafe, glissade, course sur les murs
+const MOVE = {
+  speed: 7, scoped: .74, crouch: .46, accel: 11, friction: 5, stop: 2.2,
+  airAccel: 70, airCap: .95, max: 14, cap: 30, jump: 6.6, coyote: .1, buffer: .13,
+  slideStart: 5, slideEnd: 3, slideBoost: 3.2, slideFric: .9, slideCd: .9,
+  wrTime: 1.3, wrSpeed: 7.5, wrGrav: .22, countdown: 1.5, roundEnd: 1.6, hz: 60
 };
-let MOVE = STYLES.cs;
 const PH = 1 / 120; // pas fixe de la physique du joueur
 
-const cfg = Object.assign({ diff: 'normal', target: 5, sens: 1, scopeSens: 1, scopeMode: 'hold', weapon: 'mk7', botWeapon: 'random', net: 'solo', nick: '', map: 'random' }, store.get('scopeduel.cfg', {}));
-if (!WEAPONS[cfg.weapon]) cfg.weapon = 'mk7';
-if (!STYLES[cfg.style]) cfg.style = 'arcade';
+const cfg = Object.assign({ diff: 'normal', target: 5, sens: 1, scopeSens: 1, scopeMode: 'hold', net: 'solo', nick: '', map: 'random' }, store.get('scopeduel.cfg', {}));
 if (cfg.net !== 'online') cfg.net = 'solo';
-MOVE = STYLES[cfg.style];
+for (const k of ['style', 'weapon', 'botWeapon']) delete cfg[k]; // réglages des anciennes versions
 const saveCfg = () => store.set('scopeduel.cfg', cfg);
 
 const DIFF = {
@@ -961,10 +918,6 @@ const sfx = {
     noise(t + .28, .035, .35, 'highpass', 1800); noise(t + .46, .04, .3, 'highpass', 2600);
     noise(t + .7, .035, .35, 'highpass', 2100); noise(t + .82, .03, .25, 'highpass', 3000);
   },
-  reload() {
-    if (!AC) return; const t = AC.currentTime;
-    noise(t + .3, .04, .3, 'highpass', 1500); noise(t + 1.1, .05, .35, 'highpass', 2200); noise(t + 1.7, .04, .3, 'highpass', 2600);
-  },
   scope() { if (AC) noise(AC.currentTime, .09, .12, 'bandpass', 900, 2400); },
   hit(head) { if (AC) tone(AC.currentTime, .07, .22, 'triangle', head ? 1900 : 1250); },
   kill() { if (!AC) return; const t = AC.currentTime; tone(t, .12, .2, 'sine', 880); tone(t + .09, .22, .22, 'sine', 1320); },
@@ -1096,19 +1049,19 @@ botFlash.visible = false; scene.add(botFlash);
 
 // ================= Entités =================
 const player = Object.assign(makeEnt(), {
-  weapon: cfg.weapon, yaw: 0, pitch: 0, scope: 0, scopeStart: 0, wantScope: false, toggled: false, bolt: 0, reload: 0, ammo: 5, recoil: 0, eyeY: EYE_STAND, deadT: 0, bob: 0,
+  weapon: 'knife', yaw: 0, pitch: 0, scope: 0, scopeStart: 0, wantScope: false, toggled: false, bolt: 0, ammo: 0, recoil: 0, eyeY: EYE_STAND, deadT: 0, bob: 0,
   prev: new V3(), acc: 0, coyote: 0, jumpBuf: 0, sliding: false, slideCd: 0, landDip: 0, roll: 0, fovKick: 0, tagT: 0, bloom: 0,
   lean: 0, leanOff: new V3(), wr: null, wrT: 0, wallLast: -1, wallGrace: 0, wallN: null, stepAcc: 0
 });
 const bot = Object.assign(makeEnt(), {
-  weapon: 'mk7', tagT: 0, yaw: 0, pitch: 0, scope: 0, bolt: 0, reload: 0, ammo: 5, seeTime: 0, lostT: 9, alert: 0, holdT: 0, hasLast: false, lastSeen: new V3(),
+  weapon: 'knife', tagT: 0, yaw: 0, pitch: 0, scope: 0, bolt: 0, ammo: 0, seeTime: 0, lostT: 9, alert: 0, holdT: 0, hasLast: false, lastSeen: new V3(),
   aimHead: false, strafeDir: 0, strafeT: 0, path: null, pathIdx: 0, goal: null, replanT: 0, roamGoal: null, stuckT: 0, stuckRef: new V3(), deadT: 0, flashT: 0,
   lean: 0, leanOff: new V3(), slideT: 0, hopT: 0, sliding: false, pickGoal: null, pickRetry: 0, stepAcc: 0
 });
 bot.model = makeBotModel();
 
 const game = { state: 'menu', paused: false, timer: 0, round: 0, score: [0, 0], swap: false, stats: null, bannerT: 0, callT: 0, hitT: 0 };
-let now = 0, lockFailed = false, locked = false, slideQ = false, reloadQ = false;
+let now = 0, lockFailed = false, locked = false, slideQ = false;
 const keys = {};
 const yawHist = [];
 let vmKick = 0, vmSwayX = 0, vmSwayY = 0, flashT = 0, menuAng = 0;
@@ -1124,7 +1077,6 @@ function spawnFacing(e, x, z = 0) {
 // online : match contre un pote ; lock : verrouiller la souris tout de suite (geste requis)
 function startMatch(plan, online = false, lock = true) {
   net.on = online;
-  MOVE = STYLES[cfg.style];
   curMapKey = null;
   game.score = [0, 0]; game.round = 0;
   game.stats = { shots: 0, hits: 0, hs: 0, qs: 0, ns: 0, spin: 0, air: 0, long: 0, kills: 0 };
@@ -1144,16 +1096,14 @@ function roundPlan(swap) {
 function startRound(plan) {
   game.round++; game.swap = plan.swap;
   if (plan.map !== curMapKey) loadMap(plan.map);
-  $('ft').textContent = `Premier à ${cfg.target} · ${curMap.name} · ${net.on ? 'contre ' + net.oppName : 'Bot ' + DIFF[cfg.diff].label} · ${MOVE.label}`;
+  $('ft').textContent = `Premier à ${cfg.target} · ${curMap.name} · ${net.on ? 'contre ' + net.oppName : 'Bot ' + DIFF[cfg.diff].label}`;
   const sg = game.swap ? 1 : -1, S = mapSpawns(curMap), a = S[plan.sp[0]] || S[0], c = S[plan.sp[1]] || S[0];
   spawnFacing(player, sg * a[0], a[1]); spawnFacing(bot, -sg * c[0], c[1]);
-  Object.assign(player, { scope: 0, wantScope: false, toggled: false, bolt: 0, reload: 0, recoil: 0, eyeY: EYE_STAND, tagT: 0, wr: null, wallLast: -1, wallGrace: 0, lean: 0 });
+  Object.assign(player, { scope: 0, wantScope: false, toggled: false, bolt: 0, recoil: 0, eyeY: EYE_STAND, tagT: 0, wr: null, wallLast: -1, wallGrace: 0, lean: 0 });
   player.leanOff.set(0, 0, 0);
-  setPlayerWeapon(MOVE.pickups ? 'knife' : cfg.weapon);
-  if (MOVE.pickups) setBotWeapon('knife');
-  else if (!net.on) setBotWeapon(cfg.botWeapon === 'random' ? WKEYS[rnd(WKEYS.length)] : cfg.weapon);
+  setPlayerWeapon('knife'); setBotWeapon('knife');
   if (net.on) { net.netPos.copy(bot.pos); net.netVel.set(0, 0, 0); net.yaw = bot.yaw; net.pitch = 0; }
-  Object.assign(bot, { scope: 0, bolt: 0, reload: 0, seeTime: 0, lostT: 9, alert: 0, holdT: 0, hasLast: false, path: null, roamGoal: null, goal: null, strafeDir: 0, flashT: 0, tagT: 0,
+  Object.assign(bot, { scope: 0, bolt: 0, seeTime: 0, lostT: 9, alert: 0, holdT: 0, hasLast: false, path: null, roamGoal: null, goal: null, strafeDir: 0, flashT: 0, tagT: 0,
     slideT: 0, hopT: 0, sliding: false, pickGoal: null, pickRetry: 0, lean: 0 });
   bot.leanOff.set(0, 0, 0);
   setupPickups(plan.loot);
@@ -1161,11 +1111,11 @@ function startRound(plan) {
   bot.model.rotation.set(0, bot.yaw, 0); bot.model.position.copy(bot.pos); bot.model.visible = true;
   game.state = 'countdown'; game.timer = MOVE.countdown;
   banner(`MANCHE ${game.round}`, String(Math.ceil(game.timer)), 99); sfx.tick();
-  hint(MOVE.pickups ? 'Au couteau : va chercher une arme (anneaux orange)' : `1 à 4 : changer d'arme · ${net.on ? net.oppName : 'le bot'} a le ${BW().name}`, 3);
+  hint('Au couteau : va chercher une arme (anneaux orange)', 3);
   updateScore();
 }
 function setPlayerWeapon(key) {
-  player.weapon = key; player.ammo = WEAPONS[key].mag; player.bolt = 0; player.reload = 0; player.scope = 0;
+  player.weapon = key; player.ammo = WEAPONS[key].mag; player.bolt = 0; player.scope = 0;
   showGun(key); hudCache.pips = null; setText('wname', WEAPONS[key].name);
 }
 function setBotWeapon(key) {
@@ -1239,18 +1189,9 @@ addEventListener('keydown', e => {
   if (!e.repeat) {
     if (e.code === 'Space') player.jumpBuf = MOVE.buffer;
     if (e.code === 'KeyC') slideQ = true;
-    if (e.code === 'KeyR') reloadQ = true;
     if (e.code === 'KeyF') throwQ = true;
     if (e.code === 'KeyG') swapQ = true;
-    if ((e.code === 'ShiftLeft' || e.code === 'ShiftRight') && MOVE.slide) slideQ = true;
-    const wi = ['Digit1', 'Digit2', 'Digit3', 'Digit4'].indexOf(e.code);
-    if (wi >= 0 && WKEYS[wi] && !MOVE.pickups) {
-      if (game.state === 'countdown') {
-        cfg.weapon = WKEYS[wi]; saveCfg(); setPlayerWeapon(cfg.weapon);
-        if (cfg.botWeapon === 'same' && !net.on) setBotWeapon(cfg.weapon);
-        hint(`Arme : ${PW().name}`, 1.5);
-      } else if (game.state === 'live') hint('Change d\'arme pendant le compte à rebours', 1.5);
-    }
+    if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') slideQ = true;
   }
   keys[e.code] = true;
 });
@@ -1291,18 +1232,9 @@ function computeSpread() {
   const p = player, W = PW(), hs = Math.hypot(p.vel.x, p.vel.z);
   const s = 1 - ease(p.scope);
   let spread = W.ns * s * s + p.bloom;
-  if (MOVE.moveInacc) {
-    // façon CS : précis seulement sous ~34 % de la vitesse max, inutilisable en l'air
-    const max = MOVE.speed * W.move;
-    spread += clamp((hs - max * .34) / (max * .5), 0, 1) * (p.scope > .5 ? .05 : .03);
-    if (!p.onGround) spread += .1;
-  } else if (p.scope >= 1) spread += Math.min(2, hs / MOVE.speed) * .006 + (p.onGround ? 0 : .012);
-  if (p.crouch && p.onGround) spread *= MOVE.moveInacc ? .7 : .8;
+  if (p.scope >= 1) spread += Math.min(2, hs / MOVE.speed) * .006 + (p.onGround ? 0 : .012);
+  if (p.crouch && p.onGround) spread *= .8;
   return spread;
-}
-function startReload() {
-  const p = player, W = PW(); if (MOVE.pickups || W.melee || p.reload > 0 || p.ammo >= W.mag) return;
-  p.reload = W.reload; p.toggled = false; sfx.reload();
 }
 // tire un ou plusieurs projectiles (plombs de la pompe) ; renvoie les rayons et les dégâts cumulés par cible
 function shootRays(o, dir, W, ents, spread) {
@@ -1326,9 +1258,9 @@ function shotInfo() {
 }
 function tryFire() {
   const p = player, W = PW();
-  if (game.state !== 'live' || !p.alive || p.bolt > 0 || p.reload > 0) return;
+  if (game.state !== 'live' || !p.alive || p.bolt > 0) return;
   if (W.melee) { meleeAttack(); return; }
-  if (p.ammo <= 0) { if (MOVE.pickups) playerThrow(); else startReload(); return; }
+  if (p.ammo <= 0) { playerThrow(); return; }
   const spread = computeSpread(), dir = camFwd(), origin = camera.position.clone(), info = shotInfo();
   const { rays, dmg } = shootRays(origin, dir, W, [bot], spread), mz = muzzleWorld();
   rays.forEach((r, i) => {
@@ -1338,9 +1270,8 @@ function tryFire() {
   });
   p.ammo--; p.bolt = W.cycle; p.recoil += W.recoil; vmKick = 1; flashT = .05;
   if (!W.bolt) { p.bloom = Math.min(.04, p.bloom + .007); p.yaw += (Math.random() - .5) * W.recoil * .4; }
-  // STRAFTAT : la pompe et le Titan propulsent à l'opposé du tir (tirer vers le sol = s'envoler)
-  const kick = W.kick || (p.weapon === 'titan' ? 8 : 0);
-  if (kick && !MOVE.moveInacc) { p.vel.addScaledVector(dir, -kick); p.onGround = false; endWallrun(p, false); }
+  // la pompe et le Titan propulsent à l'opposé du tir (tirer vers le sol = s'envoler)
+  if (W.kick) { p.vel.addScaledVector(dir, -W.kick); p.onGround = false; endWallrun(p, false); }
   game.stats.shots++;
   sfx.shot(.9, 0, 0, W.snd); if (W.bolt) sfx.bolt();
   if (cfg.scopeMode === 'toggle' && W.bolt) p.toggled = false;
@@ -1401,7 +1332,6 @@ function playerHitsBot(h, info, W = PW()) {
   if (b.health > 0) {
     $('hitm').classList.remove('kill'); sfx.hit(head);
     b.alert = 4; b.hasLast = true; b.lastSeen.copy(player.pos); b.seeTime += .25;
-    if (MOVE.tag) { b.tagT = .5; b.vel.x *= .4; b.vel.z *= .4; }
     if (h.stun) { b.tagT = 1.2; b.seeTime = 0; b.bolt = Math.max(b.bolt, .8); b.vel.multiplyScalar(.3); }
     return;
   }
@@ -1417,7 +1347,7 @@ function playerHit(part, dist, wall, wkey = bot.weapon, tags = [], dmg, stun) {
   const p = player, W = WEAPONS[wkey] || WEAPONS.mk7;
   p.health -= dmg !== undefined ? dmg : W.dmg[part] * (wall ? .75 : 1); p.hurtT = 1; sfx.hurt();
   p.recoil += .04; p.yaw += (Math.random() - .5) * .04;
-  if (MOVE.tag || stun) { p.tagT = stun ? 1.2 : .5; p.vel.x *= .4; p.vel.z *= .4; } // ralenti quand on est touché, comme dans CS
+  if (stun) { p.tagT = 1.2; p.vel.x *= .4; p.vel.z *= .4; }
   if (p.health > 0) return;
   p.health = 0; p.alive = false; p.deadT = 0; p.scope = 0;
   if (net.on) {
@@ -1434,10 +1364,9 @@ function applyFriction(e, fric, h) {
   const k = Math.max(0, sp - Math.max(sp, MOVE.stop) * fric * h) / sp;
   e.vel.x *= k; e.vel.z *= k;
 }
-// ref : vitesse qui fixe la force d'accélération (CS la base sur la vitesse de course max, pas sur celle de l'arme)
-function accelerate(e, wish, ws, accel, h, ref = ws) {
+function accelerate(e, wish, ws, accel, h) {
   const add = ws - (e.vel.x * wish.x + e.vel.z * wish.z); if (add <= 0) return;
-  const a = Math.min(accel * ref * h, add); e.vel.x += a * wish.x; e.vel.z += a * wish.z;
+  const a = Math.min(accel * ws * h, add); e.vel.x += a * wish.x; e.vel.z += a * wish.z;
 }
 function airAccelerate(e, wish, ws, h) {
   const add = Math.min(ws, MOVE.airCap) - (e.vel.x * wish.x + e.vel.z * wish.z); if (add <= 0) return;
@@ -1450,8 +1379,8 @@ function startSlide(p) {
   if (p.slideCd <= 0) { const k = Math.max(sp, Math.min(MOVE.max, sp + MOVE.slideBoost)) / sp; p.vel.x *= k; p.vel.z *= k; p.slideCd = MOVE.slideCd; }
   sfx.slide();
 }
-function slideHeld() { return keys.KeyC || (MOVE.slide && (keys.ShiftLeft || keys.ShiftRight)); }
-// course sur les murs (STRAFTAT)
+function slideHeld() { return keys.KeyC || keys.ShiftLeft || keys.ShiftRight; }
+// course sur les murs
 function startWallrun(p, w) { p.wr = w; p.wrT = 0; p.vel.y = Math.max(p.vel.y, 2); p.sliding = false; sfx.slide(.5, 0); }
 function endWallrun(p, grace) {
   if (!p.wr) return;
@@ -1484,18 +1413,16 @@ function stepPlayer(h) {
   let ws = 0;
   if (wish.lengthSq() > 0) {
     wish.normalize();
-    const walk = !MOVE.slide && (keys.ShiftLeft || keys.ShiftRight);
-    const mul = p.crouch && !p.sliding ? MOVE.crouch : walk ? MOVE.walk : p.scope > .5 && PW().scope !== false ? MOVE.scoped : 1;
+    const mul = p.crouch && !p.sliding ? MOVE.crouch : p.scope > .5 && PW().scope !== false ? MOVE.scoped : 1;
     ws = MOVE.speed * PW().move * mul * (p.tagT > 0 ? .45 : 1);
   }
-  if (slideQ) { slideQ = false; if (p.onGround && canMove && MOVE.slide) startSlide(p); }
+  if (slideQ) { slideQ = false; if (p.onGround && canMove) startSlide(p); }
   let jumped = false;
   if (canMove && checkPad(p)) { jumped = true; p.sliding = false; endWallrun(p, false); }
-  const onFloor = p.coyote > 0 || (p.onGround && MOVE.coyote === 0);
-  if (!jumped && canMove && ((MOVE.autoBhop && keys.Space) || p.jumpBuf > 0) && onFloor) {
+  if (!jumped && canMove && (keys.Space || p.jumpBuf > 0) && p.coyote > 0) {
     p.vel.y = MOVE.jump; p.onGround = false; p.coyote = 0; p.jumpBuf = 0; p.sliding = false; jumped = true; sfx.jump();
   }
-  if (MOVE.wallrun && canMove && !jumped) {
+  if (canMove && !jumped) {
     if (p.onGround) { endWallrun(p, false); p.wallLast = -1; p.wallGrace = 0; }
     else {
       const w = wallTouch(p), hs0 = Math.hypot(p.vel.x, p.vel.z);
@@ -1511,20 +1438,18 @@ function stepPlayer(h) {
     if (p.sliding) {
       applyFriction(p, MOVE.slideFric, h); accelerate(p, wish, 1.5, 6, h);
       if (!slideHeld() || Math.hypot(p.vel.x, p.vel.z) < MOVE.slideEnd) p.sliding = false;
-    } else { applyFriction(p, MOVE.friction, h); accelerate(p, wish, ws, MOVE.accel, h, MOVE.moveInacc ? 6.35 : ws); }
+    } else { applyFriction(p, MOVE.friction, h); accelerate(p, wish, ws, MOVE.accel, h); }
   } else airAccelerate(p, wish, ws, h);
-  // STRAFTAT : pas de plafond net, la friction au sol suffit
-  const sp = Math.hypot(p.vel.x, p.vel.z), cap = MOVE.airFree ? 30 : MOVE.max;
-  if (sp > cap) { p.vel.x *= cap / sp; p.vel.z *= cap / sp; }
+  // pas de plafond net, la friction au sol suffit ; seulement une limite de sécurité
+  const sp = Math.hypot(p.vel.x, p.vel.z);
+  if (sp > MOVE.cap) { p.vel.x *= MOVE.cap / sp; p.vel.z *= MOVE.cap / sp; }
   setCrouch(p, (!!keys.KeyC && canMove) || p.sliding);
   const vy = p.vel.y - GRAV * h;
   moveEntity(p, h);
   if (!wasGround && p.onGround) {
     p.landDip = Math.max(p.landDip, Math.min(.14, -vy * .014));
     if (vy < -5) sfx.land();
-    // CS : l'atterrissage coûte de la vitesse, ce qui tue le bhop
-    if (MOVE.landMul < 1 && vy < -2) { p.vel.x *= MOVE.landMul; p.vel.z *= MOVE.landMul; }
-    if (slideHeld() && canMove && MOVE.slide) startSlide(p);
+    if (slideHeld() && canMove) startSlide(p);
   }
 }
 function updatePlayer(dt) {
@@ -1534,17 +1459,14 @@ function updatePlayer(dt) {
   if (n >= 10) p.acc = 0;
   const hs = Math.hypot(p.vel.x, p.vel.z), W = PW();
   if (p.alive) {
-    const want = (cfg.scopeMode === 'hold' ? p.wantScope : p.toggled) && !W.melee && (p.bolt <= 0 || !W.bolt) && p.reload <= 0;
+    const want = (cfg.scopeMode === 'hold' ? p.wantScope : p.toggled) && !W.melee && (p.bolt <= 0 || !W.bolt);
     if (want) { if (p.scope <= .001) { p.scopeStart = now; sfx.scope(); } p.scope = Math.min(1, p.scope + dt / W.zoomT); }
     else p.scope = Math.max(0, p.scope - dt / (W.zoomT * .7));
-    if (p.bolt > 0) { p.bolt -= dt; if (p.bolt <= 0 && p.ammo <= 0) startReload(); }
-    if (p.reload > 0) { p.reload -= dt; if (p.reload <= 0) p.ammo = W.mag; }
-    if (reloadQ && p.bolt <= 0) startReload();
+    if (p.bolt > 0) p.bolt -= dt;
     if (p.onGround && !p.sliding) p.bob += Math.min(hs, MOVE.speed) * dt * 1.6;
-    // ses propres pas, discrets (silencieux en marchant en style CS)
-    if (p.onGround && !p.sliding && hs > (MOVE.moveInacc ? MOVE.speed * .6 : 2.5)) { p.stepAcc += hs * dt; if (p.stepAcc > 2.2) { p.stepAcc = 0; sfx.step(.2, 0); } }
+    // ses propres pas, discrets
+    if (p.onGround && !p.sliding && hs > 2.5) { p.stepAcc += hs * dt; if (p.stepAcc > 2.2) { p.stepAcc = 0; sfx.step(.2, 0); } }
   } else p.deadT += dt;
-  reloadQ = false;
   p.tagT -= dt;
   p.bloom *= Math.exp(-dt * 3.5);
   p.recoil *= Math.exp(-dt * 7);
@@ -1566,18 +1488,17 @@ function updatePlayer(dt) {
 
   // position interpolée entre deux pas de physique : image fluide quel que soit l'écran
   const a = p.acc / PH, ix = lerp(p.prev.x, p.pos.x, a), iy = lerp(p.prev.y, p.pos.y, a), iz = lerp(p.prev.z, p.pos.z, a);
-  const fx = MOVE.camFx ? 1 : .35; // CS : caméra sobre, presque pas de balancement
-  const bobAmt = (1 - p.scope) * Math.min(1, hs / MOVE.speed) * (p.onGround && !p.sliding ? 1 : 0) * fx;
-  let y = iy + p.eyeY - p.stepOff - p.landDip * fx + Math.sin(p.bob * 2) * .028 * bobAmt - Math.abs(p.lean) * .05;
+  const bobAmt = (1 - p.scope) * Math.min(1, hs / MOVE.speed) * (p.onGround && !p.sliding ? 1 : 0);
+  let y = iy + p.eyeY - p.stepOff - p.landDip + Math.sin(p.bob * 2) * .028 * bobAmt - Math.abs(p.lean) * .05;
   const inp = moveInput();
-  let rollT = canMove && MOVE.camFx ? -inp.r * .02 * Math.min(1, hs / 4) + (p.sliding ? .055 : 0) : 0;
+  let rollT = canMove ? -inp.r * .02 * Math.min(1, hs / 4) + (p.sliding ? .055 : 0) : 0;
   if (p.wr) rollT = -(p.wr.nx * R.x + p.wr.nz * R.z) * .11; // sur un mur : on penche à l'opposé du mur
   p.roll += (rollT - p.roll) * Math.min(1, dt * 9);
   let roll = p.roll * (1 - p.scope * .8) - p.lean * .12;
   if (!p.alive) { const k = ease(Math.min(1, p.deadT / .6)); y = lerp(y, iy + .35, k); roll = .5 * k; }
   camera.position.set(ix + p.leanOff.x, y, iz + p.leanOff.z);
   camera.rotation.set(p.pitch + p.recoil, p.yaw, roll);
-  const kickT = MOVE.camFx ? clamp((hs - MOVE.speed) / (MOVE.max - MOVE.speed), 0, 1) * 10 + (p.sliding ? 3 : 0) + (p.wr ? 4 : 0) : 0;
+  const kickT = clamp((hs - MOVE.speed) / (MOVE.max - MOVE.speed), 0, 1) * 10 + (p.sliding ? 3 : 0) + (p.wr ? 4 : 0);
   p.fovKick += (kickT - p.fovKick) * Math.min(1, dt * 5);
   const fov = lerp(BASE_FOV + p.fovKick, W.fov, ease(p.scope));
   if (Math.abs(camera.fov - fov) > .01) { camera.fov = fov; camera.updateProjectionMatrix(); }
@@ -1655,7 +1576,7 @@ function botPickupGoal() {
   return null;
 }
 function updateBot(dt) {
-  const b = bot, D = DIFF[cfg.diff], live = game.state === 'live', arc = !MOVE.moveInacc;
+  const b = bot, D = DIFF[cfg.diff], live = game.state === 'live';
   b.flashT -= dt;
   if (!b.alive) {
     b.deadT += dt; b.vel.x *= .9; b.vel.z *= .9; moveEntity(b, dt); b.scope = 0;
@@ -1687,7 +1608,7 @@ function updateBot(dt) {
     };
     const toPlayer = () => new V3(player.pos.x - b.pos.x, 0, player.pos.z - b.pos.z).normalize();
 
-    if (MOVE.pickups && W.melee) {
+    if (W.melee) {
       // au couteau : fonce sur le joueur s'il est près, sinon va chercher une arme
       const dP = Math.hypot(player.pos.x - b.pos.x, player.pos.z - b.pos.z), pk = botPickupGoal();
       if (vis) aimAt();
@@ -1706,19 +1627,16 @@ function updateBot(dt) {
       b.strafeT -= dt;
       if (b.strafeT <= 0) {
         const r = Math.random(); b.strafeDir = r < D.strafe * .5 ? -1 : r < D.strafe ? 1 : 0; b.strafeT = .35 + Math.random() * .8;
-        setCrouch(b, cfg.diff !== 'easy' && !arc && Math.random() < .18);
       }
       wish.set(Math.cos(b.yaw), 0, -Math.sin(b.yaw)).multiplyScalar(b.strafeDir);
       speed = b.scope > .5 ? 2.6 : 3.6;
       const dist = eye.distanceTo(tp);
       if (W.range && dist > W.range * .7) { wish.add(toPlayer()).normalize(); speed = 4.4; } // la pompe doit s'approcher
-      // en style CS le bot s'arrête pour tirer, comme un joueur qui contre-strafe
-      if (MOVE.moveInacc && b.bolt <= 0 && b.reload <= 0 && b.seeTime >= D.react * .8) wish.set(0, 0, 0);
       if (dist > 7 && b.seeTime > D.react * .5) wantScope = true;
       const aim = dirFrom(b.yaw, b.pitch), ang = aim.angleTo(tp.clone().sub(eye).normalize());
-      if (MOVE.pickups && b.ammo <= 0) {
+      if (b.ammo <= 0) {
         if (b.bolt <= 0 && b.seeTime >= D.react && dist < 18 && ang < .08) botThrow(aim); // arme vide : on la lance
-      } else if (b.bolt <= 0 && b.reload <= 0 && b.ammo > 0 && b.seeTime >= D.react && dist < (W.range || 400)) {
+      } else if (b.bolt <= 0 && b.seeTime >= D.react && dist < (W.range || 400)) {
         const close = dist < 7;
         if (b.scope >= 1 || close || W.scope === false) {
           const lim = close || W.pellets ? .12 : b.seeTime > D.react + 2.5 ? .05 : .02;
@@ -1727,7 +1645,6 @@ function updateBot(dt) {
             err *= 1 + clamp(Math.hypot(player.vel.x, player.vel.z) / 12, 0, 1) * .7;
             if (!player.onGround) err *= 1.35;
             if (player.sliding || player.wr) err *= 1.2;
-            err += Math.hypot(b.vel.x, b.vel.z) > 2 && MOVE.moveInacc ? .02 : 0;
             botFire(aim, err);
           }
         }
@@ -1757,12 +1674,12 @@ function updateBot(dt) {
     }
   }
   // arme vide hors combat : on s'en débarrasse et on repart au couteau
-  if (MOVE.pickups && !W.melee && b.ammo <= 0 && b.bolt <= 0 && !fighting) setBotWeapon('knife');
+  if (!W.melee && b.ammo <= 0 && b.bolt <= 0 && !fighting) setBotWeapon('knife');
   if (b.crouch && !(b.slideT > 0)) speed = Math.min(speed, 2.4);
-  speed *= W.move * (b.tagT > 0 ? .45 : 1) * (MOVE.moveInacc ? .85 : 1);
+  speed *= W.move * (b.tagT > 0 ? .45 : 1);
   b.tagT -= dt;
-  // STRAFTAT : le bot enchaîne les sauts et glisse
-  if (arc && live) {
+  // le bot enchaîne les sauts et glisse
+  if (live) {
     speed *= 1.3;
     if (b.slideT > 0) { b.slideT -= dt; speed *= 1.45; if (b.slideT <= 0) { setCrouch(b, false); b.sliding = false; } }
     else if (b.onGround && wish.lengthSq() > .1) {
@@ -1773,15 +1690,14 @@ function updateBot(dt) {
       }
     }
   }
-  const acc = Math.min(1, (b.onGround ? 12 : arc ? 1.2 : 2) * dt);
+  const acc = Math.min(1, (b.onGround ? 12 : 1.2) * dt);
   b.vel.x += (wish.x * speed - b.vel.x) * acc; b.vel.z += (wish.z * speed - b.vel.z) * acc;
   checkPad(b);
   moveEntity(b, dt);
   const k = Math.min(1, D.turn * dt);
   b.yaw = wrap(b.yaw + wrap(desYaw - b.yaw) * k); b.pitch += (desPitch - b.pitch) * k;
-  if (wantScope && !W.melee && (b.bolt <= 0 || !W.bolt) && b.reload <= 0) b.scope = Math.min(1, b.scope + dt / (W.zoomT * 1.4)); else b.scope = Math.max(0, b.scope - dt / .15);
-  if (b.bolt > 0) { b.bolt -= dt; if (b.bolt <= 0 && b.ammo <= 0 && !MOVE.pickups && !W.melee) b.reload = W.reload * 1.1; }
-  if (b.reload > 0) { b.reload -= dt; if (b.reload <= 0) b.ammo = W.mag; }
+  if (wantScope && !W.melee && (b.bolt <= 0 || !W.bolt)) b.scope = Math.min(1, b.scope + dt / (W.zoomT * 1.4)); else b.scope = Math.max(0, b.scope - dt / .15);
+  if (b.bolt > 0) b.bolt -= dt;
 }
 function updateBotModel(dt) {
   const b = bot, m = b.model;
@@ -1825,7 +1741,6 @@ function updateViewmodel(dt) {
     }
   } else { vmParts.bolt.rotation.z = 0; vmParts.bolt.position.z = .03; }
   if (W.melee && p.bolt > 0) { const k = Math.sin((1 - p.bolt / W.cycle) * Math.PI); rx -= .7 * k; rz += .5 * k; pos.x -= .12 * k; pos.z -= .18 * k; }
-  if (p.reload > 0) { const k = Math.sin((1 - p.reload / W.reload) * Math.PI); pos.y -= .22 * k; rx -= .45 * k; rz += .3 * k; }
   vm.position.copy(pos); vm.rotation.set(rx, -.03 * (1 - s), rz);
   vm.visible = p.alive && (p.scope < .75 || W.scope === false) && game.state !== 'menu';
   flashT -= dt; vmParts.flash.visible = flashT > 0;
@@ -1869,30 +1784,21 @@ function updateHud(dt) {
   setText('hpv', String(Math.max(0, Math.ceil(p.health))));
   $('hpbar').style.width = Math.max(0, p.health) + '%';
   $('hp').classList.toggle('low', p.health < 40);
-  const W = PW(), pipKey = p.weapon + p.ammo + (p.reload > 0 ? 'r' : '');
+  const W = PW(), pipKey = p.weapon + p.ammo;
   if (hudCache.pips !== pipKey) {
     hudCache.pips = pipKey;
     $('pips').innerHTML = Array.from({ length: W.mag }, (_, i) => `<i class="${i < p.ammo ? '' : 'spent'}"></i>`).join('');
     $('pips').classList.toggle('many', W.mag > 6);
   }
   let st = 'PRÊT', prog = 1;
-  if (W.melee) st = MOVE.pickups ? 'CHERCHE UNE ARME' : 'COUTEAU';
-  else if (p.reload > 0) { st = 'RECHARGE'; prog = 1 - p.reload / W.reload; }
+  if (W.melee) st = 'CHERCHE UNE ARME';
   else if (p.bolt > 0 && W.bolt) { st = 'CULASSE'; prog = 1 - p.bolt / W.cycle; }
-  else if (p.ammo === 0) { st = MOVE.pickups ? 'VIDE · F : LANCER' : 'R : RECHARGER'; prog = 0; }
+  else if (p.ammo === 0) { st = 'VIDE · F : LANCER'; prog = 0; }
   setText('ammoState', st);
   const hs = Math.hypot(p.vel.x, p.vel.z);
   setText('spdv', hs.toFixed(1));
   $('spdbar').firstChild.style.width = (Math.min(1, hs / MOVE.max) * 100).toFixed(1) + '%';
-  if (MOVE.moveInacc) {
-    // CS : en rouge tant qu'on va trop vite pour être précis
-    const bad = !p.onGround || hs > MOVE.speed * W.move * .34;
-    $('spd').classList.toggle('inacc', bad); $('spd').classList.remove('fast');
-    setText('spdl', bad ? 'IMPRÉCIS' : 'PRÉCIS');
-  } else {
-    $('spd').classList.toggle('fast', hs > MOVE.speed + .5); $('spd').classList.remove('inacc');
-    setText('spdl', 'm/s');
-  }
+  $('spd').classList.toggle('fast', hs > MOVE.speed + .5);
   $('spd').style.opacity = p.scope > .62 ? .35 : 1;
   $('ammoBar').firstChild.style.width = (prog * 100).toFixed(1) + '%';
 }
@@ -1948,7 +1854,7 @@ function resize() {
 }
 addEventListener('resize', resize);
 
-// ================= Armes au sol et lancers (style STRAFTAT) =================
+// ================= Armes au sol et lancers =================
 const pickGroup = new THREE.Group(); scene.add(pickGroup);
 let pickups = [], swapQ = false, throwQ = false;
 const ringGeo = new THREE.RingGeometry(.32, .44, 24).rotateX(-Math.PI / 2);
@@ -1959,7 +1865,7 @@ const beamMat = new THREE.MeshBasicMaterial({ color: 0xffb23f, transparent: true
 function setupPickups(loot) {
   for (const q of pickups) pickGroup.remove(q.obj);
   pickups = [];
-  if (!MOVE.pickups || !loot) return;
+  if (!loot) return;
   let i = 0;
   (curMap.picks || []).forEach((q, src) => {
     for (const x of q[0] ? [q[0], -q[0]] : [0]) {
@@ -1990,7 +1896,7 @@ function nearPickup(e, r) {
 }
 function updatePickups(dt) {
   for (const q of pickups) if (!q.taken) { q.gun.rotation.y += dt * 1.6; q.gun.position.y = .75 + Math.sin(now * 2.4 + q.i) * .08; }
-  if (!MOVE.pickups || game.state !== 'live') { swapQ = false; return; }
+  if (game.state !== 'live') { swapQ = false; return; }
   const p = player;
   if (p.alive) {
     const q = nearPickup(p, 1.1);
@@ -2008,7 +1914,7 @@ function throwWeapon(owner, origin, vel, key) {
 function clearThrown() { for (const t of thrown) scene.remove(t.obj); thrown.length = 0; }
 function playerThrow() {
   const p = player;
-  if (!MOVE.pickups || PW().melee || !p.alive || game.state !== 'live') return;
+  if (PW().melee || !p.alive || game.state !== 'live') return;
   const key = p.weapon, f = camFwd(), o = camera.position.clone().addScaledVector(f, .4);
   const v = f.clone().multiplyScalar(24).addScaledVector(p.vel, .5); v.y += 1.5;
   throwWeapon('me', o, v, key); sfx.throw();
@@ -2045,7 +1951,7 @@ function updateThrown(dt) {
 function opponentAudio(dt) {
   const b = bot; if (!b.alive || game.state === 'countdown') return;
   const hs = Math.hypot(b.vel.x, b.vel.z);
-  if (b.onGround && !b.sliding && hs > (MOVE.moveInacc ? MOVE.speed * .6 : 2.5)) {
+  if (b.onGround && !b.sliding && hs > 2.5) {
     b.stepAcc += hs * dt;
     if (b.stepAcc > 2.2) { b.stepAcc = 0; const s = spatial(b.pos, 32); if (s) sfx.step(s.vol, s.pan); }
   }
@@ -2119,7 +2025,7 @@ function bindConn(c) {
   c.on('open', () => {
     if (net.conn !== c) return;
     net.ready = true; net.lastRx = performance.now();
-    send('hello', { name: myName(), weapon: cfg.weapon });
+    send('hello', { name: myName(), weapon: player.weapon });
     refreshMenu();
   });
   c.on('data', m => { if (net.conn === c && m && typeof m === 'object') { net.lastRx = performance.now(); onNet(m); } });
@@ -2137,9 +2043,8 @@ function onNetClose() {
 }
 function startOnline() {
   if (!net.host || !net.ready) return;
-  MOVE = STYLES[cfg.style];
   const pl = roundPlan(Math.random() < .5);
-  send('start', { target: cfg.target, style: cfg.style, plan: pl });
+  send('start', { target: cfg.target, plan: pl });
   startMatch(pl, true);
 }
 // plan de manche reçu de l'hôte, vu depuis l'invité (côtés et points d'apparition inversés)
@@ -2175,8 +2080,8 @@ function onNet(m) {
     case 'full': netReset(); netStatus('Cette partie est déjà pleine.', 'err'); break;
     case 'start': {
       const pl = guestPlan(m.plan);
-      if (net.host || !pl || !STYLES[m.style]) break;
-      cfg.style = m.style; cfg.target = [3, 5, 7].includes(m.target) ? m.target : 5;
+      if (net.host || !pl) break;
+      cfg.target = [3, 5, 7].includes(m.target) ? m.target : 5;
       startMatch(pl, true, false); break;
     }
     case 'round': { const pl = guestPlan(m.plan); if (!net.host && net.on && game.state !== 'over' && pl) startRound(pl); break; }
@@ -2283,18 +2188,7 @@ function buildMenu() {
     const b = e.target.closest('button'); if (!b) return;
     cfg[key] = num ? Number(b.dataset.v) : b.dataset.v; saveCfg(); refreshMenu();
   });
-  const BAR_LABELS = ['Dégâts', 'Lunette', 'Cadence', 'Mobilité'];
-  $('weapons').innerHTML = WKEYS.map((k, i) => {
-    const w = WEAPONS[k];
-    const bars = w.bars.map((v, j) => `<span>${BAR_LABELS[j]}</span><i>${Array.from({ length: 5 }, (_, n) => `<b class="${n < v ? 'on' : ''}"></b>`).join('')}</i>`).join('');
-    return `<button type="button" class="card" id="weapon-${k}" data-weapon="${k}"><b>${w.name}</b><span class="dim">${i + 1} · ${w.kind.toUpperCase()}</span><small>${w.desc}</small><div class="wstats">${bars}</div></button>`;
-  }).join('');
-  $('weapons').addEventListener('click', e => {
-    const c = e.target.closest('[data-weapon]'); if (!c) return;
-    cfg.weapon = c.dataset.weapon; saveCfg(); showGun(cfg.weapon); refreshMenu();
-  });
   seg('diffSeg', 'diff'); seg('targetSeg', 'target', true); seg('modeSeg', 'scopeMode');
-  seg('styleSeg', 'style'); seg('botWSeg', 'botWeapon');
   const slider = (id, key) => $(id).addEventListener('input', e => { cfg[key] = Number(e.target.value); saveCfg(); syncSliders(); });
   slider('sens', 'sens'); slider('scopeSens', 'scopeSens'); slider('pSens', 'sens'); slider('pScopeSens', 'scopeSens');
   $('play').addEventListener('click', () => { if (isOnline()) startOnline(); else startMatch(); });
@@ -2318,20 +2212,14 @@ function syncSliders() {
 }
 function refreshMenu() {
   for (const b of document.querySelectorAll('[data-map]')) b.setAttribute('aria-pressed', String(b.dataset.map === cfg.map));
-  for (const b of document.querySelectorAll('[data-weapon]')) b.setAttribute('aria-pressed', String(b.dataset.weapon === cfg.weapon));
   const on = isOnline();
   $('online').hidden = !on;
   for (const el of document.querySelectorAll('.botonly')) el.hidden = on;
-  const pk = !!STYLES[cfg.style].pickups;
-  $('weapons').hidden = pk; $('weaponsNote').hidden = !pk; if (pk) $('secBotW').hidden = true;
   $('play').disabled = on && !(net.host && net.ready);
   $('play').textContent = on ? 'LANCER' : 'JOUER';
-  $('playNote').textContent = !on ? '' : !net.ready ? 'Crée une partie ou rejoins celle d’un pote.' : net.host ? 'Map, style et manches : c’est toi qui choisis.' : 'L’hôte choisit la map et lance la partie.';
+  $('playNote').textContent = !on ? '' : !net.ready ? 'Crée une partie ou rejoins celle d’un pote.' : net.host ? 'Map et manches : c’est toi qui choisis.' : 'L’hôte choisit la map et lance la partie.';
   if ($('nick') !== document.activeElement) $('nick').value = cfg.nick || '';
-  $('styleNote').textContent = cfg.style === 'cs'
-    ? 'CS : vitesse et friction de Counter-Strike, précision seulement à l’arrêt, pas de bhop automatique, arme choisie au menu.'
-    : 'STRAFTAT : bhop, air strafe, course sur les murs, glissade et tremplins. Couteau au départ, armes jetables à ramasser, manches éclair.';
-  for (const [id, key] of [['diffSeg', 'diff'], ['targetSeg', 'target'], ['modeSeg', 'scopeMode'], ['styleSeg', 'style'], ['botWSeg', 'botWeapon'], ['netSeg', 'net']])
+  for (const [id, key] of [['diffSeg', 'diff'], ['targetSeg', 'target'], ['modeSeg', 'scopeMode'], ['netSeg', 'net']])
     for (const b of $(id).querySelectorAll('button')) b.setAttribute('aria-pressed', String(b.dataset.v === String(cfg[key])));
   syncSliders();
 }
@@ -2346,7 +2234,7 @@ function toMenu() {
 }
 
 buildMenu();
-showGun(cfg.weapon);
+showGun('knife');
 resize();
 loadMap(menuMap()); placeMenuBot(); refreshMenu();
 showScreen('menu');
