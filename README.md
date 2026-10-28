@@ -9,6 +9,7 @@ Jeu de sniper 1v1 en vue à la première personne contre un bot ou un pote en li
 - Mouvement façon STRAFTAT : bhop, air strafe, course sur les murs et saut de mur, glissade, manches éclair
 - Départ au couteau, armes jetables posées sur la map (MK7, FAUCON, TITAN qui traverse les murs, RAFALE semi-auto, POMPE, REVOLVER), lancer d'arme qui sonne ou tue à la tête, propulsion à la pompe et au Titan
 - Se pencher (A/E), bruits de pas spatialisés de l'adversaire
+- Rendu soigné : ciel avec soleil et nuages, reflets d'environnement, textures en relief, bloom et étalonnage, fumée et poussière, bot animé, mains en vue subjective. Réglage Graphismes (Bas / Moyen / Élevé), avec passage automatique en Moyen si l'image rame
 - Quickscope, noscope, 360°, headshot, wallbang, kill sur le mur, dans le dos, au lancer
 
 Commandes : ZQSD / WASD, souris pour viser, clic droit lunette, clic gauche tirer (couteau : frapper), Espace sauter (contre un mur : rebondir), Maj ou C glisser, C s'accroupir, A/E se pencher, F lancer son arme, G prendre une arme au sol, P pause.
