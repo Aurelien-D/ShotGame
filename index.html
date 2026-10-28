@@ -97,6 +97,8 @@ html,body{height:100%;margin:0;overflow:hidden;background:var(--ink);color:var(-
 #spdbar i{display:block;height:100%;width:0;background:var(--fg)}
 #spd.fast b{color:var(--amber)} #spd.fast #spdbar i{background:var(--amber)}
 #pips.many i{width:5px;height:20px}
+#pips b{font-family:var(--display);font-weight:400;font-size:28px;line-height:1;color:var(--amber)}
+#pips small{font-size:13px;color:var(--mute);align-self:flex-end}
 #feed .fw{font-size:11px;letter-spacing:.1em;color:var(--mute);font-weight:700}
 #ptimer{position:absolute;top:calc(14px + env(safe-area-inset-top,0px));left:50%;transform:translateX(-50%);padding:6px 18px 8px;background:var(--panel);border:1px solid var(--line);text-align:center}
 #ptimer b{display:block;font-family:var(--display);font-weight:400;font-size:34px;line-height:1;font-variant-numeric:tabular-nums}
@@ -288,7 +290,7 @@ button:focus-visible{outline:2px solid var(--fg);outline-offset:2px}
       <div class="netrow"><button type="button" class="btn ghost" id="bindReset">Touches par défaut</button><span class="note">Clique sur une case puis appuie sur une touche, un bouton de souris ou la molette · Échap annule · Retour arrière efface</span></div>
     </section>
     <p class="tip"><b>Mouvement :</b> maintiens <kbd data-k="jump"></kbd> pour enchaîner les sauts et tourne la souris en tenant <kbd data-k="left"></kbd> ou <kbd data-k="right"></kbd> en l'air pour accélérer (air strafe). Saute contre un mur en avançant pour <b>courir dessus</b>, <kbd data-k="jump"></kbd> pour rebondir vers le mur d'en face. <kbd data-k="slide"></kbd> en pleine course pour glisser : dans une <b>pente</b> la glissade accélère, et une rampe montée vite fait décoller. On se hisse tout seul sur un rebord attrapé de justesse. Les <b>tremplins orange</b> envoient en hauteur, les <b>scies</b> tuent.</p>
-    <p class="tip"><b>Armes :</b> tu pars au couteau (un coup dans le dos tue). Les armes sont posées sur la map, repérées par des anneaux orange : au couteau on les ramasse en passant, sinon <kbd data-k="pick"></kbd> pour échanger. Pas de rechargement : une arme vide se lance avec <kbd data-k="throw"></kbd>, et tue si elle touche la tête.</p>
+    <p class="tip"><b>Armes :</b> tu pars au couteau (un coup dans le dos tue). La <b>MITRA</b> et le <b>FUSIL</b> sont automatiques : maintiens <kbd data-k="fire"></kbd>, le viseur monte et la dispersion grandit si tu arroses. Les armes sont posées sur la map, repérées par des anneaux orange : au couteau on les ramasse en passant, sinon <kbd data-k="pick"></kbd> pour échanger. Pas de rechargement : une arme vide se lance avec <kbd data-k="throw"></kbd>, et tue si elle touche la tête.</p>
     <p class="tip"><b>Quickscope :</b> <kbd data-k="scope"></kbd> puis <kbd data-k="fire"></kbd> dès que la lunette est en place (0,16 s). Sans lunette, la balle part dans un cône large : le noscope marche de près. Un <b>reflet orange</b> trahit le bot quand il est en lunette.</p>
     <div class="cta">
       <button type="button" class="btn" id="play">JOUER</button>
@@ -402,6 +404,21 @@ const WEAPONS = {
     zoomT: .12, fov: 56, scope: false, cycle: .42, bolt: false, mag: 6, ns: .035, move: 1.06, pen: 0, recoil: .06,
     snd: { vol: .85, hi: 6500, lo: 140, len: .4 },
     gun: { len: .2, r: .012, body: 0x3a3d40, wood: 0x5a3b22, noScope: true, short: true }
+  },
+  // automatiques : on maintient le tir ; bloom = dispersion ajoutée à chaque balle, cone = dispersion même en visant
+  mitra: {
+    name: 'MITRA', au: 'à la', auto: true,
+    dmg: { head: 40, body: 20, legs: 15 }, falloff: [10, 30], range: 26,
+    zoomT: .12, fov: 62, scope: false, cycle: .07, bolt: false, mag: 30, ns: .05, cone: .012, bloom: .005, bloomMax: .045, move: 1.08, pen: 0, recoil: .011,
+    snd: { vol: .5, hi: 7800, lo: 210, len: .15 },
+    gun: { len: .2, r: .011, body: 0x26292c, wood: 0x26292c, noScope: true, mag: [.035, .17, .05] }
+  },
+  fusil: {
+    name: 'FUSIL', auto: true,
+    dmg: { head: 75, body: 32, legs: 24 }, falloff: [22, 55], range: 50,
+    zoomT: .15, fov: 50, scope: false, cycle: .105, bolt: false, mag: 25, ns: .045, cone: .004, bloom: .004, bloomMax: .035, move: .98, pen: 0, recoil: .016,
+    snd: { vol: .65, hi: 6800, lo: 160, len: .22 },
+    gun: { len: .4, r: .012, body: 0x2f3236, wood: 0x6b5236, noScope: true, mag: [.04, .15, .08], magTilt: .35 }
   },
   saw: { name: 'SCIE', melee: true, hazard: true, dmg: { head: 999, body: 999, legs: 999 }, zoomT: .1, fov: BASE_FOV, scope: false, cycle: 1, bolt: false, mag: 0, ns: 0, move: 1, pen: 0, recoil: 0 },
   knife: {
@@ -1376,7 +1393,7 @@ function makeGunMesh(g) {
     if (fat > 1.2) mesh(B(.012, .14, .012), gunMat, 0, -.06, -.62, root); // bipied replié du Titan
   } else mesh(B(.012, .02, .02), gunMat, 0, .03, bEnd + .05, root); // guidon
   if (g.pump) mesh(B(.06, .05, .2), furn, 0, -.045, -.62, root);
-  mesh(B(g.mag[0], g.mag[1], g.mag[2]), gunMat, 0, -.035 - g.mag[1] / 2, -.13, root);
+  mesh(B(g.mag[0], g.mag[1], g.mag[2]), gunMat, 0, -.035 - g.mag[1] / 2, -.13, root).rotation.x = g.magTilt || 0; // chargeur courbe du fusil
   bolt.position.set(.035, .02, .03);
   mesh(B(.05, .012, .012), gunMat, .025, 0, 0, bolt);
   mesh(new THREE.SphereGeometry(.014, 8, 6), gunMat, .055, 0, 0, bolt);
@@ -1461,11 +1478,11 @@ function spawnFacing(e, x, z = 0) {
 const MODES = {
   rounds: { label: 'Manches', note: 'Une vie par manche, armes à ramasser, map différente à chaque manche.', rounds: true, pickups: true },
   dm: { label: 'Deathmatch', note: 'Réapparition immédiate et les armes au sol reviennent. Le premier au nombre de kills gagne.', respawn: true, pickups: true },
-  gungame: { label: 'Gun Game', note: 'Chaque kill te donne l’arme suivante, munitions infinies. Le dernier kill se fait au couteau.', respawn: true },
+  gungame: { label: 'Gun Game', note: 'Chaque kill te donne l’arme suivante (9 armes, mitraillettes comprises), munitions infinies. Le dernier kill se fait au couteau.', respawn: true },
   knives: { label: 'Couteaux', note: 'Couteaux seulement, et ils se lancent ({throw}) : un lancer qui touche tue. Le couteau revient en 1,4 s.', rounds: true, knives: true },
   parkour: { label: 'Parkour', note: 'Seul contre la montre sur un parcours au-dessus de la lave. {restart} pour recommencer, ton record est gardé.', course: true }
 };
-const LADDER = ['titan', 'mk7', 'faucon', 'rafale', 'revolver', 'pompe', 'knife'];
+const LADDER = ['titan', 'mk7', 'fusil', 'faucon', 'rafale', 'mitra', 'revolver', 'pompe', 'knife'];
 const DM_GOAL = { 3: 10, 5: 15, 7: 20 };
 const MODE = () => MODES[game.mode] || MODES.rounds;
 const PERS = () => PERSONAS[bot.persona] || PERSONAS.malin;
@@ -1808,6 +1825,7 @@ function computeSpread() {
   const s = 1 - ease(p.scope);
   let spread = W.ns * s * s + p.bloom;
   if (p.scope >= 1) spread += Math.min(2, hs / MOVE.speed) * .006 + (p.onGround ? 0 : .012);
+  spread += W.cone || 0;
   if (p.crouch && p.onGround) spread *= .8;
   return spread;
 }
@@ -1843,10 +1861,11 @@ function tryFire() {
     showPierced(origin, r.d, r.hit);
     if (r.hit && !r.hit.ent && i < 6) impact(r.end, r.hit.n);
   });
-  p.ammo--; p.bolt = W.cycle; p.recoil += W.recoil; vmKick = 1; flashT = .05; p.shake = (p.shake || 0) + W.recoil * 5;
+  p.ammo--; p.bolt = W.cycle + (W.auto ? Math.max(-W.cycle, Math.min(0, p.bolt)) : 0); p.recoil += W.recoil; // en rafale on garde le reste pour tenir la cadence vmKick = 1; flashT = .05; p.shake = (p.shake || 0) + W.recoil * 5;
   if (game.mode === 'gungame' && p.ammo <= 0) p.ammo = W.mag;
-  puff(mz, .45, .7, .25, .5); flashLight(mz);
-  if (!W.bolt) { p.bloom = Math.min(.04, p.bloom + .007); p.yaw += (Math.random() - .5) * W.recoil * .4; }
+  if (!W.auto || p.ammo % 3 === 0) puff(mz, .45, .7, .25, .5); // en rafale, une bouffée de fumée toutes les 3 balles
+  flashLight(mz);
+  if (!W.bolt) { p.bloom = Math.min(W.bloomMax || .04, p.bloom + (W.bloom || .007)); p.yaw += (Math.random() - .5) * W.recoil * .4; }
   // la pompe et le Titan propulsent à l'opposé du tir (tirer vers le sol = s'envoler)
   if (W.kick) { p.vel.addScaledVector(dir, -W.kick); p.onGround = false; endWallrun(p, false); }
   game.stats.shots++;
@@ -2064,6 +2083,7 @@ function updatePlayer(dt) {
     if (want) { if (p.scope <= .001) { p.scopeStart = now; sfx.scope(); } p.scope = Math.min(1, p.scope + dt / W.zoomT); }
     else p.scope = Math.max(0, p.scope - dt / (W.zoomT * .7));
     if (p.bolt > 0) p.bolt -= dt;
+    if (W.auto && held('fire') && p.bolt <= 0 && game.state === 'live') tryFire(); // rafale tant que le tir est maintenu
     p.knifeT -= dt;
     if (p.onGround && !p.sliding) p.bob += Math.min(hs, MOVE.speed) * dt * 1.6;
     // ses propres pas, discrets
@@ -2149,9 +2169,10 @@ function botFire(aim, err) {
     showPierced(o, r.d, r.hit);
     if (r.hit && !r.hit.ent && i < 6) impact(r.end, r.hit.n);
   });
-  b.bolt = W.cycle * (W.bolt ? 1.15 : 1.6); b.ammo--; b.flashT = .06;
+  b.bolt = W.cycle * (W.bolt ? 1.15 : W.auto ? 1.25 : 1.6); b.ammo--; b.flashT = .06;
   if (game.mode === 'gungame' && b.ammo <= 0) b.ammo = W.mag;
-  puff(tip, .5, .7, .3, .5); flashLight(tip);
+  if (!W.auto || b.ammo % 3 === 0) puff(tip, .5, .7, .3, .5);
+  flashLight(tip);
   const s = spatial(o, 1e4);
   sfx.shot(Math.max(.18, 1 - s.d / 60), s.pan, Math.min(1, s.d / 40), W.snd);
   const h = dmg.get(player);
@@ -2458,8 +2479,9 @@ function updateHud(dt) {
   const W = PW(), pipKey = p.weapon + p.ammo;
   if (hudCache.pips !== pipKey) {
     hudCache.pips = pipKey;
-    $('pips').innerHTML = Array.from({ length: W.mag }, (_, i) => `<i class="${i < p.ammo ? '' : 'spent'}"></i>`).join('');
-    $('pips').classList.toggle('many', W.mag > 6);
+    $('pips').innerHTML = W.mag > 12 ? `<b>${p.ammo}</b><small>/ ${W.mag}</small>` // une balle par trait jusqu'à 12, au-delà un compteur
+      : Array.from({ length: W.mag }, (_, i) => `<i class="${i < p.ammo ? '' : 'spent'}"></i>`).join('');
+    $('pips').classList.toggle('many', W.mag > 6 && W.mag <= 12);
   }
   let st = 'PRÊT', prog = 1;
   if (W.melee) st = game.mode === 'knives' ? (p.knifeT > 0 ? 'LANCÉ…' : `${kn('throw')} : LANCER`) : MODE().pickups ? 'CHERCHE UNE ARME' : 'COUTEAU';
